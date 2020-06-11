@@ -1,0 +1,8 @@
+.idea
+.vscode
+*~
+build
+target
+__pycache__
+temp
+zk
