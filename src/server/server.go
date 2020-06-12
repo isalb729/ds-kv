@@ -24,11 +24,11 @@ func starServer(port string) {
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
 
-	//注册zk节点q
 	conn, err := example.GetConnect()
 	if err != nil {
 		fmt.Printf(" connect zk error: %s ", err)
 	}
+
 	defer conn.Close()
 	err = example.RegistServer(conn, port)
 	if err != nil {

@@ -1,13 +1,15 @@
 # ds-kv
 TODO:
-get familiar with zk and zk client
-trry cluster
-finish basic
+1. zk cluster
+2. zk client, create delete get, ephemeral, sequential
+3. server establish
+4. server basic
 unit test
-finish advanced
+5. server cluster
+6. finish advanced
 unit test
-write shell client
-loadtest
+7. write shell client
+8. loadtest
 
 
 ## zookeeper deployment

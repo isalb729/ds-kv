@@ -3,33 +3,19 @@ package main
 import (
 	"fmt"
 	"github.com/samuel/go-zookeeper/zk"
+	"log"
 	"time"
 )
 
-func getConnect() {
-	zkList := []string{"localhost:12181"}
+/**
+ *
+ * @param zkList:
+ * @return
+ */
+func connect(zkList []string) (*zk.Conn, error) {
 	conn, _, err := zk.Connect(zkList, 10*time.Second)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer conn.Close()
-	c, err := conn.Create("/go_servers", nil, 0, zk.WorldACL(zk.PermAll))
-	if err != nil {
-		fmt.Print(err)
-		return
-	}
-	fmt.Println(c)
-	c, err = conn.Create("/testadaadsasdsaw", nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
-	if err != nil {
-		fmt.Print(err)
-		return
-	}
-	fmt.Print(c)
-	children, _, err := conn.Children("/go_servers")
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Printf("%v \n", children)
+	return conn, err
+
 }
 
 func RegistServer(conn *zk.Conn, host string) (err error) {
@@ -43,5 +29,23 @@ func GetServerList(conn *zk.Conn) (list []string, err error) {
 }
 
 func main() {
-	getConnect()
+	zkList := []string{"localhost:12181"}
+	conn, err := connect(zkList)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+	// ephemeral|sequential
+	c, err := conn.Create("/go_serversaa", []byte("123"),  0, zk.WorldACL(zk.PermAll))
+	if err != nil {
+		fmt.Print(err)
+		return
+	}
+	fmt.Println(c)
+	children, _, err := conn.Get("/go_serversaa")
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%v \n", string(children))
+
 }
