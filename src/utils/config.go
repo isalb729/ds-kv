@@ -16,6 +16,7 @@ func readYamlFile(cfg interface{}, file string) error {
 	decoder := yaml.NewDecoder(f)
 	err = decoder.Decode(cfg)
 	if err != nil {
+		_ = f.Close()
 		return err
 	}
 	return f.Close()

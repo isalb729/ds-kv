@@ -1,7 +1,6 @@
 .ONESHELL:
 .PHONY: help build zk
 SHELL=/bin/bash
-
 help:
 
 clean:
@@ -10,7 +9,8 @@ test:
 
 build:
 
-# make zk num=3
+proto:
+	@protoc --proto_path=src/rpc/proto --go_out=plugins=grpc:src/rpc server.proto;
 zk:
-	@
-	#../bin/zkServer.sh restart
+	@cd scripts
+	@./zk.sh
