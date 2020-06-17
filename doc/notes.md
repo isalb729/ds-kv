@@ -30,7 +30,7 @@ How to keep the consistency between primary node and standby node?
 
 # ds-kv
 TODO:
-1. zk cluster
+1. zk cluster connect, config manage, lock, naming service, cluster manage
 2. zk client, create delete get, ephemeral, sequential
 3. server establish
 4. server basic
