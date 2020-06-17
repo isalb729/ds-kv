@@ -1,0 +1,16 @@
+//https://grpc.io/docs/languages/go/basics/
+syntax = "proto3";
+option go_package = ".;rpc";
+
+// client to master
+service Meta {
+  rpc GetSlave(GetSlaveRequest) returns (GetSlaveResponse);
+}
+
+message GetSlaveRequest {
+  string key = 1;
+}
+
+message GetSlaveResponse {
+  repeated string addr = 1;
+}

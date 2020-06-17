@@ -1,24 +1,43 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"github.com/isalb729/ds-kv/src/rpc"
 	"github.com/isalb729/ds-kv/src/server/zookeeper"
 	"github.com/isalb729/ds-kv/src/utils"
-	"github.com/samuel/go-zookeeper/zk"
 	"google.golang.org/grpc"
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 type Cfg struct {
 	Zk     []string `yaml:"zk"`
-	Master struct {
-		Port int `yaml:"port"`
-	} `yaml:"master"`
 }
-
+//for {
+//select {
+//case c <- x:
+//x, y = y, x+y
+//case <-quit:
+//fmt.Println("quit")
+//return
+//}
+//}
 func main() {
+	// server address and type are passed through command line
+	// default random port
+	addr := flag.String("addr", "127.0.0.1:", "master or slave listening address")
+	tp := flag.String("type", "slave", "master or slave")
+	if len(*addr) == 0 {
+		log.Fatalln("empty address")
+	}
+	if (*addr)[0] == ':' {
+		*addr = "127.0.0.1" + *addr
+	}
+
+	// zk info is stored in config file
 	var cfg Cfg
 	err := utils.LoadConfig(&cfg)
 	if err != nil {
@@ -28,89 +47,45 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.Master.Port))
+	lis, err := net.Listen("tcp", *addr)
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 	grpcServer := grpc.NewServer()
-	rpc.RegisterAuthServer(grpcServer, &zk.AuthServer{})
-	grpcServer.Serve(lis)
-	//go starServer("127.0.0.1:8897")
-	//go starServer("127.0.0.1:8898")
-	//go starServer("127.0.0.1:8899")
-	//
-	//a := make(chan bool, 1)
-	//<-a
+	switch *tp {
+	case "master":
+		err = initMaster(grpcServer, zkConn, lis.Addr().String())
+		if err != nil {
+			log.Fatalln("fail to init master", err)
+		}
+	case "slave":
+		err = initSlave(grpcServer, zkConn, lis.Addr().String())
+		if err != nil {
+			log.Fatalln("fail to init slave", err)
+		}
+	default:
+		log.Fatalln("wrong type: only master or slave is supported")
+	}
+	log.Printf("server run on addr: %s\n", lis.Addr())
+
+	// run as a thread
+	errChan := make(chan error)
+	go func() {
+		if err :=  grpcServer.Serve(lis); err != nil {
+			errChan <- err
+			log.Fatal("fail to run the service", err)
+			return
+		}
+	}()
+
+	// listen for signals
+	go func() {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+		errChan <- fmt.Errorf("%s", <-c)
+	}()
+	log.Println("shutting down the service...", <-errChan)
+	/* TODO: Deregister. */
 }
 
-//func starServer(port string) {
-//	tcpAddr, err := net.ResolveTCPAddr("tcp4", port)
-//	fmt.Println(tcpAddr)
-//	checkError(err)
-//
-//	listener, err := net.ListenTCP("tcp", tcpAddr)
-//	checkError(err)
-//
-//	conn, err := example.GetConnect()
-//	if err != nil {
-//		fmt.Printf(" connect zk error: %s ", err)
-//	}
-//
-//	defer conn.Close()
-//	err = example.RegistServer(conn, port)
-//	if err != nil {
-//		fmt.Printf(" regist node error: %s ", err)
-//	}
-//
-//	for {
-//		conn, err := listener.Accept()
-//		if err != nil {
-//			fmt.Fprintf(os.Stderr, "Error: %s", err)
-//			continue
-//		}
-//		go handleCient(conn, port)
-//	}
-//
-//	fmt.Println("aaaaaa")
-//}
-//
-//func handleCient(conn net.Conn, port string) {
-//	defer conn.Close()
-//
-//	daytime := time.Now().String()
-//	conn.Write([]byte(port + ": " + daytime))
-//}
-//
-//func RegistServer(conn *zk.Conn, host string) (err error) {
-//	_, err = conn.Create("/go_servers/"+host, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
-//	return
-//}
-//
-//func GetServerList(conn *zk.Conn) (list []string, err error) {
-//	list, _, err = conn.Children("/go_servers")
-//	return
-//}
-//
-//func main() {
-//	zkList := []string{"localhost:12181"}
-//	conn, err := connect(zkList)
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	defer conn.Close()
-//	// ephemeral|sequential
-//	c, err := conn.Create("/go_serversaa", []byte("123"),  0, zk.WorldACL(zk.PermAll))
-//	if err != nil {
-//		fmt.Print(err)
-//		return
-//	}
-//	fmt.Println(c)
-//	children, _, err := conn.Get("/go_serversaa")
-//	if err != nil {
-//		fmt.Println(err)
-//	}
-//	fmt.Printf("%v \n", string(children))
-//
-//}
-//

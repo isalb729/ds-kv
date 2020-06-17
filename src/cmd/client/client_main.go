@@ -9,13 +9,8 @@ import (
 	"google.golang.org/grpc"
 	"log"
 )
-type Cfg struct {
-	Zk     []string `yaml:"zk"`
-	Master struct {
-		Port int `yaml:"port"`
-		Host string `yaml:"host"`
-	} `yaml:"master"`
-}
+
+
 
 func main() {
 	option := flag.String("op", "func1", "the client program to run")
