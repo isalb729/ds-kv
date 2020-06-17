@@ -1,15 +1,3 @@
-# ds-kv
-TODO:
-1. zk cluster
-2. zk client, create delete get, ephemeral, sequential
-3. server establish
-4. server basic
-unit test
-5. server cluster
-6. finish advanced
-unit test
-7. write shell client
-8. loadtest
 
 
 ## zookeeper deployment
@@ -26,3 +14,4 @@ syncLimit = 2
 
 bin/zkServer.sh start
 
+jump consistent hashing
