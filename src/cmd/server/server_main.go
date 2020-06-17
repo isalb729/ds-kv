@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/isalb729/ds-kv/src/rpc"
+	"github.com/isalb729/ds-kv/src/server/zookeeper"
 	"github.com/isalb729/ds-kv/src/utils"
-	"github.com/isalb729/ds-kv/src/zk"
+	"github.com/samuel/go-zookeeper/zk"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -23,7 +24,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	zkConn, err := zk.Connect(cfg.Zk)
+	zkConn, err := zookeeper.Connect(cfg.Zk)
 	if err != nil {
 		log.Fatalln(err)
 	}
