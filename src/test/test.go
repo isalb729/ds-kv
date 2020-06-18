@@ -1,15 +1,19 @@
 package main
 
 import (
-	"flag"
+	"context"
 	"fmt"
+	"time"
 )
 
 func main()  {
-	_ = flag.String("a", "", "")
-	flag.Parse()
-	b := flag.String("b", "", "")
-	flag.Parse()
-	fmt.Println(b)
+	//ctx := context.Background()
+	ctx, _ := context.WithTimeout(context.Background(), 2 * time.Second)
+	fmt.Println(ctx.Deadline())
+	time.Sleep(3 * time.Second)
+	ctx2, _ := context.WithTimeout(ctx, 5 * time.Second)
+	fmt.Println(<-ctx2.Done())
+	fmt.Println(ctx2.Deadline())
+	fmt.Println(<-ctx.Done())
+	fmt.Println(ctx.Err())
 }
-

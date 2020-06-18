@@ -12,5 +12,5 @@ message GetSlaveRequest {
 }
 
 message GetSlaveResponse {
-  repeated string addr = 1;
+  string addr = 1;
 }

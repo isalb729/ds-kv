@@ -1,9 +1,13 @@
 package client
 
-func F1() {
+import "github.com/isalb729/ds-kv/src/rpc"
+
+func Concurrent(cli *KvCli) {
 
 }
 
-func F2() {
-
+func Sequential(cli *KvCli) {
+	get()
+	put()
+	del()
 }
