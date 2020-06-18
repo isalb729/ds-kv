@@ -6,7 +6,7 @@ import (
 )
 
 type Master struct {
-	slaveList []string
+	SlaveList []string
 }
 /**
  * Implement metaHandler interface.
@@ -15,6 +15,4 @@ func (m Master) GetSlave(ctx context.Context, request *rpc.GetSlaveRequest) (*rp
 	// jump consistent hash and return key
 	panic("implement me")
 }
-
-
 

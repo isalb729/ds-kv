@@ -8,20 +8,26 @@ import (
 )
 
 func initMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
-	/* Register. */
+	err := registerMaster(conn, addr)
+	if err != nil {
+		return err
+	}
 	/* Get slave list and fill. */
+	// TODO: LOCK
+	slaveList, err := getSlaveList(conn)
 	/* Listen slave list. */
-	rpc.RegisterMetaServer(grpcServer, &server.Master{})
+	rpc.RegisterMasterServer(grpcServer, &server.Master{
+		SlaveList: slaveList,
+	})
 	return nil
 }
 
-//func RegistServer(conn *zk.Conn, host string) (err error) {
-//	_, err = conn.Create("/go_servers/"+host, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
-//	return
-//}
-//
-//func GetServerList(conn *zk.Conn) (list []string, err error) {
-//	list, _, err = conn.Children("/go_servers")
-//	return
-//}
-//
+func registerMaster(conn *zk.Conn, addr string) (err error) {
+	_, err = conn.Create("/master/"+addr, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
+	return err
+}
+
+func getSlaveList(conn *zk.Conn) (list []string, err error) {
+	list, _, err = conn.Children("/slave")
+	return list, err
+}

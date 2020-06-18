@@ -19,7 +19,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	var a func(rpc.AuthClient)
+	var a func(masterClient rpc.MasterClient)
 	switch *option {
 	case "concurrent":
 		a := client.F1

@@ -88,4 +88,3 @@ func main() {
 	log.Println("shutting down the service...", <-errChan)
 	/* TODO: Deregister. */
 }
-
