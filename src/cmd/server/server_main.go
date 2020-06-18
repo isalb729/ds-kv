@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/isalb729/ds-kv/src/server/zookeeper"
 	"github.com/isalb729/ds-kv/src/utils"
+	"github.com/samuel/go-zookeeper/zk"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -16,15 +17,7 @@ import (
 type Cfg struct {
 	Zk     []string `yaml:"zk"`
 }
-//for {
-//select {
-//case c <- x:
-//x, y = y, x+y
-//case <-quit:
-//fmt.Println("quit")
-//return
-//}
-//}
+
 func main() {
 	// server address and type are passed through command line
 	// default random port
@@ -55,12 +48,12 @@ func main() {
 	grpcServer := grpc.NewServer()
 	switch *tp {
 	case "master":
-		err = initMaster(grpcServer, zkConn, lis.Addr().String())
+		err = InitMaster(grpcServer, zkConn, lis.Addr().String())
 		if err != nil {
 			log.Fatalln("fail to init master", err)
 		}
 	case "slave":
-		err = initSlave(grpcServer, zkConn, lis.Addr().String())
+		err = InitSlave(grpcServer, zkConn, lis.Addr().String())
 		if err != nil {
 			log.Fatalln("fail to init slave", err)
 		}
@@ -87,4 +80,9 @@ func main() {
 	}()
 	log.Println("shutting down the service...", <-errChan)
 	/* TODO: Deregister. */
+	/* acquire re/degister lock*/
+	/* delete node */
+	/* delete data directory*/
+	zkConn.Close()
 }
+

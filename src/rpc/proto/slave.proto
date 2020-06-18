@@ -1,6 +1,6 @@
 //https://grpc.io/docs/languages/go/basics/
 syntax = "proto3";
-option go_package = ".;rpc";
+option go_package = ".;pb";
 
 // client to slave
 service Kv {

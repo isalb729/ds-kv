@@ -1,6 +1,5 @@
-package server
+package rpc
 
 type Slave struct {
 	MasterList []string
 }
-

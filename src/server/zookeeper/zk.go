@@ -9,21 +9,7 @@ func Connect(zkList []string) (*zk.Conn, error) {
 	conn, _, err := zk.Connect(zkList, 10*time.Second)
 	return conn, err
 }
-//
-///**
-// *
-// */
-//func RegisterServer() {
-//
-//}
-//
-///**
-// *
-// */
-//func DeregisterServer() {
-//
-//}
-//
+
 //func watch() {
 //	fmt.Printf("ZKOperateWatchTest\n")
 //	// callback is a function
