@@ -3,9 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/isalb729/ds-kv/src/server/zookeeper"
 	"github.com/isalb729/ds-kv/src/utils"
-	"github.com/samuel/go-zookeeper/zk"
+	"github.com/isalb729/ds-kv/src/zookeeper"
 	"google.golang.org/grpc"
 	"log"
 	"net"

@@ -8,14 +8,16 @@ import (
 )
 
 func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
+	// register lock
 	err := registerMaster(conn, addr)
 	if err != nil {
 		return err
 	}
 	/* Get slave list and fill. */
-	// TODO: LOCK
+	// register lock
 	slaveList, err := getSlaveList(conn)
-	/* Listen slave list. */
+	// Listen slave list.
+	// add label
 	pb.RegisterMetaServer(grpcServer, &rpc.Master{
 		//SlaveList: slaveList,
 	})
@@ -27,7 +29,8 @@ func registerMaster(conn *zk.Conn, addr string) (err error) {
 	return err
 }
 
-// TODO
+
+// TODO: replica master
 func deregisterMaster(conn *zk.Conn, addr string) (err error) {
 	return err
 }

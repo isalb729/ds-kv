@@ -2,27 +2,26 @@ package main
 
 import (
 	"fmt"
+	"github.com/isalb729/ds-kv/src/zookeeper"
+	"github.com/samuel/go-zookeeper/zk"
+	"time"
 )
 
-
-func jch(key uint64, num int64) int64 {
-	b, j := int64(-1), int64(0)
-	for ; j < num; {
-		b = j
-		key = key * 2862933555777941757 + 1
-		j = (b + 1) * int64(float64(1 << 31) / float64(key >> 33 + 1))
-	}
-	return b
-}
-
 func main()  {
-	keys := []uint64{5, 9, 10, 16, 18, 20, 21}
-	for i := int64(0); i < 16; i++ {
-		fmt.Printf("%d servers\n", i)
-		for _, v := range keys {
-			fmt.Print(jch(v, i), ", ")
+	//Changes to that znode trigger the watch and then clear the watch.
+	//All of the read operations in ZooKeeper - getData(), getChildren(), and exists() - have the option of setting a watch as a side effect.
+	conn, _ := zookeeper.Connect([]string{"127.0.0.1:2181", "127.0.0.1:2281", "127.0.0.1:2381"})
+	_, _, event, _ := conn.ExistsW("/a")
+	for {
+		select {
+			/* after this event channel is closed */
+			case e := <-event:
+				fmt.Println(e.Type==zk.EventNodeChildrenChanged)
+				_, _, event, _ = conn.ExistsW("/a")
 		}
-		fmt.Println()
+		time.Sleep(1 * time.Second)
 	}
 
+	conn.Close()
 }
+

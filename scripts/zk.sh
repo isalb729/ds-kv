@@ -11,7 +11,7 @@ for zk in $ZKLIST
 do
     $ZK/$zk/bin/zkServer.sh $CMD
 done
-sleep 10
+sleep 20
 PS=$(ps -ef | grep zk- | grep -v grep | awk '{print $2}')
 if [[ ($CMD = restart) || ($CMD = start) ]]
 then
