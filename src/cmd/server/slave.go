@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/isalb729/ds-kv/src/rpc"
 	"github.com/isalb729/ds-kv/src/rpc/pb"
+	"github.com/isalb729/ds-kv/src/utils"
 	"github.com/samuel/go-zookeeper/zk"
 	"google.golang.org/grpc"
 )
@@ -10,14 +11,13 @@ import (
 
 
 func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
-	// lock
+	// TODO: lock register
 	err := registerSlave(conn, addr)
 	if err != nil {
 		return err
 	}
-	// lock
-	getMaster(conn)
 	pb.RegisterKvServer(grpcServer, &rpc.KvOp{})
+	utils.CreateDataDir("data/" + addr)
 	// todo: advanced: listen master
 	return nil
 }
@@ -46,4 +46,5 @@ func deregisterSlave(conn *zk.Conn, addr string) (err error) {
 func getMaster(conn *zk.Conn) (string, error) {
 	//list, _, err := conn.Children("/master")
 	//return list, err
+	return "", nil
 }

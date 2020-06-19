@@ -41,5 +41,9 @@ unit test
 7. write shell client
 8. loadtest
 
-// zk init limit sync limit
-bin/zkCli.sh -server 127.0.0.1:2181
+
+advanced:
+shared lock
+data realloc when deregistering
+master replica
+multi master run on the same port

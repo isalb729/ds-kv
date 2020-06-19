@@ -14,3 +14,4 @@ func Connect(zkList []string) (*zk.Conn, error) {
 func lock() {
 
 }
+

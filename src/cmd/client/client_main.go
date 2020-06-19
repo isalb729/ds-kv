@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"github.com/isalb729/ds-kv/src/client"
-	"github.com/isalb729/ds-kv/src/rpc"
+	"github.com/isalb729/ds-kv/src/rpc/pb"
 	"google.golang.org/grpc"
 	"log"
 )
@@ -17,11 +17,11 @@ func main() {
 	if (*addr)[0] == ':' {
 		*addr = "127.0.0.1" + *addr
 	}
-	conn, err := grpc.Dial(*addr)
+	conn, err := grpc.Dial(*addr, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalln(err)
 	}
-	var try func(rpc.MasterClient)
+	var try func(*client.KvCli)
 	switch *option {
 	case "concurrent":
 		try = client.Concurrent
@@ -30,8 +30,8 @@ func main() {
 	default:
 		log.Fatalln("not implemented option")
 	}
-	cli := rpc.NewMasterClient(conn)
-	try(cli)
+	masterCli := pb.NewMetaClient(conn)
+	try(&client.KvCli{Mc: masterCli})
 	err = conn.Close()
 	if err != nil {
 		log.Fatalln(err)

@@ -2,14 +2,15 @@ package rpc
 
 import (
 	"context"
+	"fmt"
 	"github.com/isalb729/ds-kv/src/rpc/pb"
 )
 /*
  *  Master has to take good care of label.
  */
 type SlaveMeta struct {
-	label string
-	host string
+	Label int
+	Host string
 }
 
 type Master struct {
@@ -24,5 +25,6 @@ type Master struct {
 func (m Master) GetSlave(ctx context.Context, request *pb.GetSlaveRequest) (*pb.GetSlaveResponse, error) {
 	// consistent hash and return key
 	//request.Key
-
+	fmt.Println(m.SlaveList)
+	return nil, nil
 }

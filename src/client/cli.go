@@ -1,13 +1,25 @@
 package client
 
-import "github.com/isalb729/ds-kv/src/rpc"
+import (
+	"context"
+	"github.com/isalb729/ds-kv/src/rpc/pb"
+	"time"
+)
+
+//import "github.com/isalb729/ds-kv/src/rpc"
 
 func Concurrent(cli *KvCli) {
 
 }
 
 func Sequential(cli *KvCli) {
-	get()
-	put()
-	del()
+	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+	_, _ = cli.Mc.GetSlave(ctx, &pb.GetSlaveRequest{
+		Key:                  "s",
+	})
+
+
+	//get()
+	//put()
+	//del()
 }

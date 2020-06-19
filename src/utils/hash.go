@@ -1,9 +1,9 @@
 package utils
 
-//func BasicHash(key string) uint32 {
-//	a := []byte(key)
-//
-//	algorithm := fnv.New32a()
-//	algorithm.Write([]byte(key))
-//	return algorithm.Sum32()
-//}
+import "hash/fnv"
+
+func BasicHash(key string) uint32 {
+	algorithm := fnv.New32a()
+	_, _ = algorithm.Write([]byte(key))
+	return algorithm.Sum32()
+}

@@ -2,13 +2,13 @@ package client
 
 import (
 	"context"
-	"github.com/isalb729/ds-kv/src/rpc"
+	"github.com/isalb729/ds-kv/src/rpc/pb"
 	"google.golang.org/grpc"
 	"time"
 )
 
 type KvCli struct {
-	Mc rpc.MasterClient
+	Mc pb.MetaClient
 }
 
 /**
@@ -17,18 +17,18 @@ type KvCli struct {
  */
 func (cli *KvCli) put(key, value string) (error, bool) {
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
-	rsp, err := cli.Mc.GetSlave(ctx, &rpc.GetSlaveRequest{
+	rsp, err := cli.Mc.GetSlave(ctx, &pb.GetSlaveRequest{
 		Key: key,
 	})
 	if err != nil {
 		return err, false
 	}
-	conn, err := grpc.DialContext(ctx, rsp.Addr)
+	conn, err := grpc.DialContext(ctx, rsp.Addr, grpc.WithInsecure())
 	if err != nil {
 		return err, false
 	}
-	kvClient := rpc.NewKvClient(conn)
-	putRsp, err := kvClient.Put(ctx, &rpc.PutRequest{
+	kvClient := pb.NewKvClient(conn)
+	putRsp, err := kvClient.Put(ctx, &pb.PutRequest{
 		Key:                  key,
 		Value:                value,
 	})
@@ -44,18 +44,18 @@ func (cli *KvCli) put(key, value string) (error, bool) {
  */
 func (cli *KvCli) get(key string) (err error, value string) {
 	ctx, _ := context.WithTimeout(context.Background(), 1*time.Second)
-	rsp, err := cli.Mc.GetSlave(ctx, &rpc.GetSlaveRequest{
+	rsp, err := cli.Mc.GetSlave(ctx, &pb.GetSlaveRequest{
 		Key: key,
 	})
 	if err != nil {
 		return err, ""
 	}
-	conn, err := grpc.DialContext(ctx, rsp.Addr)
+	conn, err := grpc.DialContext(ctx, rsp.Addr, grpc.WithInsecure())
 	if err != nil {
 		return err, ""
 	}
-	kvClient := rpc.NewKvClient(conn)
-	getRsp, err := kvClient.Get(ctx, &rpc.GetRequest{
+	kvClient := pb.NewKvClient(conn)
+	getRsp, err := kvClient.Get(ctx, &pb.GetRequest{
 		Key:                  key,
 	})
 	if err != nil {
@@ -70,18 +70,18 @@ func (cli *KvCli) get(key string) (err error, value string) {
  */
 func (cli *KvCli) del(key string) (error, bool) {
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
-	rsp, err := cli.Mc.GetSlave(ctx, &rpc.GetSlaveRequest{
+	rsp, err := cli.Mc.GetSlave(ctx, &pb.GetSlaveRequest{
 		Key: key,
 	})
 	if err != nil {
 		return err, false
 	}
-	conn, err := grpc.DialContext(ctx, rsp.Addr)
+	conn, err := grpc.DialContext(ctx, rsp.Addr, grpc.WithInsecure())
 	if err != nil {
 		return err, false
 	}
-	kvClient := rpc.NewKvClient(conn)
-	delRsp, err := kvClient.Del(ctx, &rpc.DelRequest{
+	kvClient := pb.NewKvClient(conn)
+	delRsp, err := kvClient.Del(ctx, &pb.DelRequest{
 		Key:                  key,
 	})
 	if err != nil {
