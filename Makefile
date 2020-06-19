@@ -18,4 +18,6 @@ proto:
 zk:
 	@cd scripts
 	@./zk.sh
+zkcli:
+	@zk/zk-1/bin/zkCli.sh -server=127.0.0.1:2181
 

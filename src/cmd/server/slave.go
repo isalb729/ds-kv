@@ -22,14 +22,22 @@ func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
 	return nil
 }
 
-func getSlaveList(conn *zk.Conn) (list []string, err error) {
-	list, _, err = conn.Children("/slave")
-	return list, err
-}
+
 func registerSlave(conn *zk.Conn, addr string) (err error) {
+	exist, _, err := conn.Exists("/data")
+	if err != nil {
+		return err
+	}
+	if !exist {
+		_, err := conn.Create("/data", nil, 0, zk.WorldACL(zk.PermAll))
+		if err != nil {
+			return err
+		}
+	}
 	_, err = conn.Create("/data/"+addr, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
 	return err
 }
+
 func deregisterSlave(conn *zk.Conn, addr string) (err error) {
 	_, err = conn.Create("/data/"+addr, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
 	return err

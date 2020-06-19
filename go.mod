@@ -1,4 +1,4 @@
-module github.com/isalb729/ds-kv/src
+module github.com/isalb729/ds-kv
 
 go 1.13
 

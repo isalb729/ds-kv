@@ -25,6 +25,16 @@ func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
 }
 
 func registerMaster(conn *zk.Conn, addr string) (err error) {
+	exist, _, err := conn.Exists("/master")
+	if err != nil {
+		return err
+	}
+	if !exist {
+		_, err := conn.Create("/master", nil, 0, zk.WorldACL(zk.PermAll))
+		if err != nil {
+			return err
+		}
+	}
 	_, err = conn.Create("/master/"+addr, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
 	return err
 }
@@ -33,4 +43,9 @@ func registerMaster(conn *zk.Conn, addr string) (err error) {
 // TODO: replica master
 func deregisterMaster(conn *zk.Conn, addr string) (err error) {
 	return err
+}
+
+func getSlaveList(conn *zk.Conn) (list []string, err error) {
+	list, _, err = conn.Children("/slave")
+	return list, err
 }
