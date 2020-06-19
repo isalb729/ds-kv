@@ -43,8 +43,8 @@ func registerSlave(conn *zk.Conn, addr string) (err error) {
 }
 
 // TODO
-func deregisterSlave(conn *zk.Conn, addr string) (err error) {
-	_, err = conn.Create("/data/"+addr, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
+func deregisterSlave(conn *zk.Conn, dataDir string) error {
+
+	err := utils.DeleteDataDir(dataDir)
 	return err
 }
-

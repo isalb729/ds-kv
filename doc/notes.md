@@ -42,8 +42,14 @@ unit test
 8. loadtest
 
 
-advanced:
-shared lock
-data realloc when deregistering
-master replica
-multi master run on the same port
+
+先做服务器数量不变时 get put delete
+slave 改成data
+然后做服务器数量删除时 
+再做服务器数量增加时
+再做锁
+再做master的备份，client可链接多个master，一次只有一个master正常，第一个成功
+multi-master concurrency control
+测试
+剩下的到7.30做
+You should build standby node for data node (at least two), and backup data in standby node.
