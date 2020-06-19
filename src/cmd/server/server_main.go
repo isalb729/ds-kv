@@ -22,6 +22,7 @@ func main() {
 	// default random port
 	addr := flag.String("addr", "127.0.0.1:", "master or slave listening address")
 	tp := flag.String("type", "slave", "master or slave")
+	dataDir := flag.String("data", "", "data directory")
 	if len(*addr) == 0 {
 		log.Fatalln("empty address")
 	}
@@ -52,7 +53,7 @@ func main() {
 			log.Fatalln("fail to init master", err)
 		}
 	case "slave":
-		err = InitSlave(grpcServer, zkConn, lis.Addr().String())
+		err = InitSlave(grpcServer, zkConn, lis.Addr().String(), *dataDir)
 		if err != nil {
 			log.Fatalln("fail to init slave", err)
 		}

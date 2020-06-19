@@ -6,22 +6,26 @@ import (
 	"github.com/isalb729/ds-kv/src/utils"
 	"github.com/samuel/go-zookeeper/zk"
 	"google.golang.org/grpc"
+	"log"
 )
 
-
-
-func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
+func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir string) error {
 	// TODO: lock register
 	err := registerSlave(conn, addr)
 	if err != nil {
 		return err
 	}
-	pb.RegisterKvServer(grpcServer, &rpc.KvOp{})
-	utils.CreateDataDir("data/" + addr)
-	// todo: advanced: listen master
+	log.Printf("Registered slave: %s\n", addr)
+	err = utils.CreateDataDir(dataDir)
+	if err != nil {
+		return err
+	}
+	// set data direct
+	pb.RegisterKvServer(grpcServer, &rpc.KvOp{
+		DataDir: dataDir,
+	})
 	return nil
 }
-
 
 func registerSlave(conn *zk.Conn, addr string) (err error) {
 	exist, _, err := conn.Exists("/data")
@@ -38,13 +42,9 @@ func registerSlave(conn *zk.Conn, addr string) (err error) {
 	return err
 }
 
+// TODO
 func deregisterSlave(conn *zk.Conn, addr string) (err error) {
 	_, err = conn.Create("/data/"+addr, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
 	return err
 }
 
-func getMaster(conn *zk.Conn) (string, error) {
-	//list, _, err := conn.Children("/master")
-	//return list, err
-	return "", nil
-}

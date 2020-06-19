@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	HOLE = 137
+	Interval = 2 * time.Second
 )
 
 func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
@@ -57,7 +57,7 @@ func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
 					}
 
 			}
-			time.Sleep(1 * time.Second)
+			time.Sleep(Interval)
 		}
 	}()
 	// TODO: unlock register

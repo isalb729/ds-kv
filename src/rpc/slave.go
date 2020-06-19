@@ -6,7 +6,6 @@ import (
 )
 
 type KvOp struct {
-	MasterList []string
 	// TODO
 	DataDir string
 }
