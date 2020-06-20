@@ -43,10 +43,11 @@ unit test
 
 
 测并发
+register and deregister panic and recover
 先做服务器数量不变时 get put delete
-slave 改成data
 然后做服务器数量删除时 
 再做服务器数量增加时
+
 再做锁
 再做master的备份，client可链接多个master，一次只有一个master正常，第一个成功
 multi-master concurrency control

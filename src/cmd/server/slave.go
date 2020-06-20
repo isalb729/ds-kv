@@ -19,7 +19,7 @@ func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir stri
 	if err != nil {
 		return err
 	}
-	log.Printf("Registered slave: %s\n", addr)
+	log.Printf("registered slave: %s\n", addr)
 	err = utils.CreateDataDir(dataDir)
 	if err != nil {
 		return err

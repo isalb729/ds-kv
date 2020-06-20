@@ -10,6 +10,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 )
 
@@ -20,11 +21,17 @@ type Cfg struct {
 func main() {
 	// server address and type are passed through command line
 	// default random port
-	addr := flag.String("addr", "127.0.0.1:", "master or slave listening address")
-	tp := flag.String("type", "slave", "master or slave")
-	dataDir := flag.String("data", "", "data directory; not end with /")
+	addr := flag.String("addr", "127.0.0.1:", "Master or slave listening address")
+	tp := flag.String("type", "slave", "Master or slave")
+	dataDir := flag.String("data", "", "Data directory; not end with /")
+	// zk info is stored in config file
+	var cfg Cfg
+	err := utils.LoadConfig(&cfg)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	if len(*addr) == 0 {
-		log.Fatalln("empty address")
+		log.Fatalln("Empty address")
 	}
 	if (*addr)[0] == ':' {
 		*addr = "127.0.0.1" + *addr
@@ -32,44 +39,46 @@ func main() {
 	if *dataDir != "" && (*dataDir)[len(*dataDir) - 1] == '/' {
 		*dataDir = (*dataDir)[:len(*dataDir) - 1]
 	}
-	// zk info is stored in config file
-	var cfg Cfg
-	err := utils.LoadConfig(&cfg)
-	if err != nil {
-		log.Fatalln(err)
-	}
 	zkConn, err := zookeeper.Connect(cfg.Zk)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	lis, err := net.Listen("tcp", *addr)
+	splitAddr := strings.Split(*addr, ":")
+	host := splitAddr[0]
+	lis, err := net.Listen("tcp", ":" + splitAddr[1])
 	if err != nil {
 		log.Fatalln(err)
 	}
+	splitAddr = strings.Split(lis.Addr().String(), ":")
+	//fmt.Println(splitAddr)
+	port := splitAddr[len(splitAddr) - 1]
+	//fmt.Println(*addr)
 
+	name := host + ":" + port
+	log.Printf("Server name: %s\n", name)
 	grpcServer := grpc.NewServer()
 	switch *tp {
 	case "master":
-		err = InitMaster(grpcServer, zkConn, lis.Addr().String())
+		err = InitMaster(grpcServer, zkConn, name)
 		if err != nil {
-			log.Fatalln("fail to init master", err)
+			log.Fatalln("Fail to init master", err)
 		}
 	case "slave":
-		err = InitSlave(grpcServer, zkConn, lis.Addr().String(), *dataDir)
+		err = InitSlave(grpcServer, zkConn, name, *dataDir)
 		if err != nil {
-			log.Fatalln("fail to init slave", err)
+			log.Fatalln("Fail to init slave", err)
 		}
 	default:
-		log.Fatalln("wrong type: only master or slave is supported")
+		log.Fatalln("Wrong type: only master or slave is supported")
 	}
-	log.Printf("server run on addr: %s\n", lis.Addr())
+	log.Printf("Server run on addr: %s\n", lis.Addr())
 
 	// run as a thread
 	errChan := make(chan error)
 	go func() {
 		if err :=  grpcServer.Serve(lis); err != nil {
 			errChan <- err
-			log.Fatal("fail to run the service", err)
+			log.Fatal("Fail to run the service", err)
 			return
 		}
 	}()
@@ -80,7 +89,7 @@ func main() {
 		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 		errChan <- fmt.Errorf("%s", <-c)
 	}()
-	log.Println("shutting down the service...", <-errChan)
+	log.Println("Shutting down the service...", <-errChan)
 	/* TODO: Deregister. */
 	/* acquire re/degister lock*/
 	/* delete node */

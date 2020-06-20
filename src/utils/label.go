@@ -36,7 +36,6 @@ func Label(labelList []int) ([]int, int) {
 	return labelList, label
 }
 
-
 func Insert(list []int, index, val int) []int {
 	last := len(list) - 1
 	if last == -1 {

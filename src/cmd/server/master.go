@@ -41,6 +41,7 @@ func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
 		for {
 			select {
 				/* after this event channel is closed */
+				/* todo: multiple at the same time*/
 				case e := <-event:
 					if e.Type == zk.EventNodeChildrenChanged {
 						masterHandler.SlaveList, err = getSlaveList(conn)
@@ -78,6 +79,7 @@ func registerMaster(conn *zk.Conn, addr string) (err error) {
 	}
 	// ephemeral
 	_, err = conn.Create("/master/"+addr, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
+
 	return err
 }
 

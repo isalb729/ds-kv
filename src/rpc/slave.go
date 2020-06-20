@@ -48,7 +48,7 @@ func (kv KvOp) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse
 		}, nil
 	} else {
 		return &pb.GetResponse{
-			Ok:                   false,
+			Ok:                   true,
 			Value:                data[key].(string),
 		}, nil
 	}

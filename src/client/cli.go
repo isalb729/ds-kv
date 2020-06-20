@@ -25,9 +25,15 @@ func Sequential(cli *KvCli) {
 	}
 
 	put("os", "100")
+	put("ds", "98")
+	put("ca", "97")
+	put("st", "96")
 	get("os")
 	put("os", "99")
 	get("os")
 	del("os")
+	get("ds")
+	get("ds")
+	get("st")
 	get("os")
 }
