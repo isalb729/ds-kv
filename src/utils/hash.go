@@ -7,3 +7,4 @@ func BasicHash(key string) uint32 {
 	_, _ = algorithm.Write([]byte(key))
 	return algorithm.Sum32()
 }
+

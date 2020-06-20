@@ -22,14 +22,16 @@ func main() {
 	// default random port
 	addr := flag.String("addr", "127.0.0.1:", "master or slave listening address")
 	tp := flag.String("type", "slave", "master or slave")
-	dataDir := flag.String("data", "", "data directory")
+	dataDir := flag.String("data", "", "data directory; not end with /")
 	if len(*addr) == 0 {
 		log.Fatalln("empty address")
 	}
 	if (*addr)[0] == ':' {
 		*addr = "127.0.0.1" + *addr
 	}
-
+	if (*dataDir)[len(*dataDir) - 1] == '/' {
+		*dataDir = (*dataDir)[:len(*dataDir) - 1]
+	}
 	// zk info is stored in config file
 	var cfg Cfg
 	err := utils.LoadConfig(&cfg)

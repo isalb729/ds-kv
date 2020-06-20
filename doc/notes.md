@@ -42,7 +42,7 @@ unit test
 8. loadtest
 
 
-
+测并发
 先做服务器数量不变时 get put delete
 slave 改成data
 然后做服务器数量删除时 
@@ -53,3 +53,4 @@ multi-master concurrency control
 测试
 剩下的到7.30做
 You should build standby node for data node (at least two), and backup data in standby node.
+server内部data分多个文件

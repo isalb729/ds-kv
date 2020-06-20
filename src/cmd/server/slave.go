@@ -9,6 +9,10 @@ import (
 	"log"
 )
 
+const (
+	StoreLevel = 2
+)
+
 func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir string) error {
 	// TODO: lock register
 	err := registerSlave(conn, addr)
@@ -22,7 +26,8 @@ func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir stri
 	}
 	// set data direct
 	pb.RegisterKvServer(grpcServer, &rpc.KvOp{
-		DataDir: dataDir,
+		DataDir:    dataDir,
+		StoreLevel: StoreLevel,
 	})
 	return nil
 }

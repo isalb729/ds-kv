@@ -11,7 +11,7 @@ func Label(labelList []int) ([]int, int) {
 	} else if length == 1 {
 		return []int{labelList[0], HoleNum / 2}, HoleNum / 2
 	}
-	max := dist(labelList[length - 1], labelList[0], HoleNum)
+	max := Dist(labelList[length - 1], labelList[0], HoleNum)
 	i := 0
 	for j := 1; j < len(labelList); j++ {
 		if labelList[j] - labelList[j - 1] > max {
@@ -31,6 +31,7 @@ func Label(labelList []int) ([]int, int) {
 	return labelList, label
 }
 
+
 func Insert(list []int, index, val int) []int {
 	last := len(list) - 1
 	if last == -1 {
@@ -46,7 +47,7 @@ func Insert(list []int, index, val int) []int {
 }
 
 
-func dist(a, b, max int) int {
+func Dist(a, b, max int) int {
 	var dist int
 	if a <= b {
 		dist = b - a
