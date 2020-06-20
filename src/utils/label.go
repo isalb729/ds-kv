@@ -9,7 +9,12 @@ func Label(labelList []int) ([]int, int) {
 	if length == 0 {
 		return []int{0}, 0
 	} else if length == 1 {
-		return []int{labelList[0], HoleNum / 2}, HoleNum / 2
+		label := (HoleNum / 2 + labelList[0]) % HoleNum
+		if label > labelList[0] {
+			return []int{labelList[0], label}, label
+		} else {
+			return []int{label, labelList[0]}, label
+		}
 	}
 	max := Dist(labelList[length - 1], labelList[0], HoleNum)
 	i := 0

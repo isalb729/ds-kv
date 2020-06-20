@@ -1,6 +1,13 @@
 package main
 
+import (
+	"fmt"
+	"github.com/isalb729/ds-kv/src/utils"
+)
+
 func main() {
+	data := map[string]interface{}{}
+	fmt.Println(utils.ReadMap("a", &data))
 	//Changes to that znode trigger the watch and then clear the watch.
 	//All of the read operations in ZooKeeper - getData(), getChildren(), and exists() - have the option of setting a watch as a side effect.
 	//conn, _ := zookeeper.Connect([]string{"127.0.0.1:2181", "127.0.0.1:2281", "127.0.0.1:2381"})

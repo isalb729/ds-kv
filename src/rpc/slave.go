@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/isalb729/ds-kv/src/rpc/pb"
 	"github.com/isalb729/ds-kv/src/utils"
+	"log"
 )
 
 type KvOp struct {
@@ -30,11 +31,13 @@ func (kv KvOp) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse
 	key := request.Key
 	err, path := getPath(kv.DataDir, key, kv.StoreLevel)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 	data := map[string]interface{}{}
 	err = utils.ReadMap(path, &data)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 
@@ -49,8 +52,6 @@ func (kv KvOp) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse
 			Value:                data[key].(string),
 		}, nil
 	}
-	//err := utils.CreateDataDir("hello")
-	////_ = utils.WriteMap("hello/world", map[string]interface{}{"000": "0", "11": "new"})
 }
 
 func (kv KvOp) Put(ctx context.Context, request *pb.PutRequest) (*pb.PutResponse, error) {
@@ -59,25 +60,29 @@ func (kv KvOp) Put(ctx context.Context, request *pb.PutRequest) (*pb.PutResponse
 	val := request.Value
 	err, path := getPath(kv.DataDir, key, kv.StoreLevel)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 	created := true
-	rsp, err := KvOp.Get(kv, ctx, &pb.GetRequest{
-		Key:                  key,
-	})
+
+	data := map[string]interface{}{}
+	err = utils.ReadMap(path, &data)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
-	if rsp.Ok {
-		if rsp.Value == val {
+	if data[key] != nil {
+		if data[key] == val {
 			return &pb.PutResponse{
 				Created:              false,
 			}, nil
 		}
 		created = false
 	}
+
 	err = utils.AppendMap(path, map[string]interface{}{key: val})
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 	return &pb.PutResponse{
@@ -95,6 +100,7 @@ func (kv KvOp) Del(ctx context.Context, request *pb.DelRequest) (*pb.DelResponse
 	data := map[string]interface{}{}
 	err = utils.ReadMap(path, &data)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 	if data[key] == nil {
@@ -105,6 +111,7 @@ func (kv KvOp) Del(ctx context.Context, request *pb.DelRequest) (*pb.DelResponse
 		delete(data, key)
 		err = utils.WriteMap(path, data)
 		if err != nil {
+			log.Println(err)
 			return nil, err
 		}
 		return &pb.DelResponse{

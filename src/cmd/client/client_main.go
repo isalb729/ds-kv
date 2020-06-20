@@ -10,7 +10,7 @@ import (
 
 func main() {
 	// one master address
-	// TODO: multiple
+	// TODO: multiple master
 	addr := flag.String("addr", "", "master or slave listening address")
 	option := flag.String("op", "func1", "the client program to run")
 	flag.Parse()

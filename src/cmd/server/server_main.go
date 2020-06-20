@@ -29,7 +29,7 @@ func main() {
 	if (*addr)[0] == ':' {
 		*addr = "127.0.0.1" + *addr
 	}
-	if (*dataDir)[len(*dataDir) - 1] == '/' {
+	if *dataDir != "" && (*dataDir)[len(*dataDir) - 1] == '/' {
 		*dataDir = (*dataDir)[:len(*dataDir) - 1]
 	}
 	// zk info is stored in config file

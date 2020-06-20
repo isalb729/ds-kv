@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"github.com/isalb729/ds-kv/src/rpc/pb"
 	"google.golang.org/grpc"
 	"time"
@@ -60,6 +61,9 @@ func (cli *KvCli) get(key string) (err error, value string) {
 	})
 	if err != nil {
 		return err, ""
+	}
+	if !getRsp.Ok {
+		return fmt.Errorf("not found"), ""
 	}
 	return nil, getRsp.Value
 }
