@@ -43,6 +43,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	defer zkConn.Close()
 	splitAddr := strings.Split(*addr, ":")
 	host := splitAddr[0]
 	lis, err := net.Listen("tcp", ":" + splitAddr[1])
@@ -90,10 +91,22 @@ func main() {
 		errChan <- fmt.Errorf("%s", <-c)
 	}()
 	log.Println("Shutting down the service...", <-errChan)
-	/* TODO: Deregister. */
-	/* acquire re/degister lock*/
-	/* delete node */
-	/* delete data directory*/
-	zkConn.Close()
-}
 
+	/* TODO re/degister lock*/
+	// stop the panicking
+	r := recover()
+	if r != nil {
+		log.Println("Recovering from", r)
+	}
+	if *tp == "slave" {
+		err = deregisterSlave(zkConn, *dataDir)
+	} else if *tp == "master" {
+		err = deregisterMaster(zkConn, *dataDir)
+	}
+	if err != nil {
+		log.Println(err)
+	} else {
+		log.Printf("Deregistered %s %s\n", *tp, name)
+	}
+	// TODO: unlock register
+}

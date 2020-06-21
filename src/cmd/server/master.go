@@ -24,7 +24,7 @@ func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
 	}
 	log.Printf("Registered master: %s\n", addr)
 	// get slave list and add label
-	slaveList, err := getSlaveList(conn)
+	slaveList, _, err := getSlaveList(conn)
 	if err != nil {
 		return err
 	}
@@ -39,26 +39,20 @@ func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
 	}
 	go func() {
 		for {
-			select {
-				/* after this event channel is closed */
-				/* todo: multiple at the same time*/
-				case e := <-event:
-					if e.Type == zk.EventNodeChildrenChanged {
-						masterHandler.SlaveList, err = getSlaveList(conn)
-						if err != nil {
-							panic(err)
-						}
-						log.Println("SlaveList changed: ", masterHandler.SlaveList)
-					}
-					_, _, event, err = conn.ChildrenW("/data")
-					if err != nil {
-						// TODO: do deregister after fatal or use panic and recover
-						// When doing master replica
-						log.Fatalln(err)
-					}
-
+			/* todo: multiple at the same time*/
+			e := <-event
+			if e.Type == zk.EventNodeChildrenChanged {
+				masterHandler.SlaveList, _, err = getSlaveList(conn)
+				if err != nil {
+					panic(err)
+				}
+				log.Println("SlaveList changed: ", masterHandler.SlaveList)
 			}
-			time.Sleep(Interval)
+			_, _, event, err = conn.ChildrenW("/data")
+			if err != nil {
+				// TODO: do deregister after fatal or use panic and recover
+				panic(err)
+			}
 		}
 	}()
 	// TODO: unlock register
@@ -83,20 +77,18 @@ func registerMaster(conn *zk.Conn, addr string) (err error) {
 	return err
 }
 
-
-// TODO: replica master
-func deregisterMaster(conn *zk.Conn, addr string) (err error) {
-	return err
+func deregisterMaster(conn *zk.Conn, addr string) error {
+	return nil
 }
 
 /*
  * label the slaves here
  * @return []rpc.SlaveMeta
  */
-func getSlaveList(conn *zk.Conn) ([]rpc.SlaveMeta, error) {
+func getSlaveList(conn *zk.Conn) ([]rpc.SlaveMeta, []int, error) {
 	list, _, err := conn.Children("/data")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	slaveList := make([]rpc.SlaveMeta, len(list))
 	labelList := make([]int, 0)
@@ -104,12 +96,12 @@ func getSlaveList(conn *zk.Conn) ([]rpc.SlaveMeta, error) {
 		slaveList[i].Host = host
 		val, _, err := conn.Get("/data/" + host)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if string(val) != "" {
 			intV, err := utils.Str2Int(string(val))
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 			slaveList[i].Label = intV
 			labelList = append(labelList, intV)
@@ -124,12 +116,11 @@ func getSlaveList(conn *zk.Conn) ([]rpc.SlaveMeta, error) {
 		if slave.Label == -1 {
 			// calculate the label, and add it to the labelList
 			labelList, slaveList[i].Label = utils.Label(labelList)
-			_, err := conn.Set("/data/" + slave.Host, []byte(utils.Int2str(slaveList[i].Label)), -1)
+			_, err := conn.Set("/data/"+slave.Host, []byte(utils.Int2str(slaveList[i].Label)), -1)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 		}
 	}
-	return slaveList, err
+	return slaveList, labelList, err
 }
-

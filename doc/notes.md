@@ -42,10 +42,9 @@ unit test
 8. loadtest
 
 
-测并发
 register and deregister panic and recover
 先做服务器数量不变时 get put delete
-然后做服务器数量删除时 
+然后做服务器数量删除时
 再做服务器数量增加时
 
 再做锁
@@ -53,5 +52,9 @@ register and deregister panic and recover
 multi-master concurrency control
 测试
 剩下的到7.30做
+重试机制
 You should build standby node for data node (at least two), and backup data in standby node.
-server内部data分多个文件
+
+case:
+a deregister
+c stop server

@@ -71,6 +71,7 @@ func (kv KvOp) Put(ctx context.Context, request *pb.PutRequest) (*pb.PutResponse
 		log.Println(err)
 		return nil, err
 	}
+
 	if data[key] != nil {
 		if data[key] == val {
 			return &pb.PutResponse{
@@ -85,6 +86,7 @@ func (kv KvOp) Put(ctx context.Context, request *pb.PutRequest) (*pb.PutResponse
 		log.Println(err)
 		return nil, err
 	}
+
 	return &pb.PutResponse{
 		Created:              created,
 	}, nil
