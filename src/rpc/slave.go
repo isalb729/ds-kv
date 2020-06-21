@@ -13,6 +13,8 @@ type KvOp struct {
 	StoreLevel int
 }
 
+
+
 func getPath(base, key string, storeLevel int) (error, string) {
 	if storeLevel < 1 {
 		return fmt.Errorf("a store level is supposed to be at least one"), ""
@@ -120,4 +122,45 @@ func (kv KvOp) Del(ctx context.Context, request *pb.DelRequest) (*pb.DelResponse
 			Deleted:              true,
 		}, nil
 	}
+}
+
+func shouldBeMoved(key string, toLabel, fromLabel int32) bool {
+	label := utils.BasicHash(key) % utils.HoleNum
+	dto := utils.Dist(int(label), int(toLabel), utils.HoleNum)
+	dfrom := utils.Dist(int(label), int(fromLabel), utils.HoleNum)
+	return dto < dfrom || dto == dfrom && toLabel < fromLabel
+}
+
+func (kv KvOp) MoveData(ctx context.Context, request *pb.MoveDataRequest) (*pb.MoveDataResponse, error) {
+	paths, err := utils.ReadAllFiles(kv.DataDir)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	var kvs []*pb.MoveDataResponse_Kv
+	for _, path := range paths {
+		data := map[string]interface{}{}
+		err = utils.ReadMap(path, &data)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		for k, v := range data {
+			kvs = append(kvs, &pb.MoveDataResponse_Kv{
+				Key:                  k,
+				Value:                v.(string),
+			})
+			if shouldBeMoved(v.(string),  request.ToLabel, request.FromLabel) {
+				delete(data, k)
+			}
+		}
+		err = utils.WriteMap(path, data)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+	}
+	return &pb.MoveDataResponse{
+		Kvs:                  kvs,
+	}, nil
 }

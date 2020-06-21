@@ -29,9 +29,12 @@ func (m Master) GetSlave(ctx context.Context, request *pb.GetSlaveRequest) (*pb.
 	hash := int(utils.BasicHash(request.Key) % utils.HoleNum)
 	dist := utils.HoleNum
 	var addr string
+	var lastLabel int
 	for _, v := range m.SlaveList {
-		if utils.Dist(v.Label, hash, utils.HoleNum) < dist {
+		// if the same dist, choose the one with the smallest label
+		if utils.Dist(v.Label, hash, utils.HoleNum) < dist || utils.Dist(v.Label, hash, utils.HoleNum) == dist && lastLabel > v.Label {
 			dist = utils.Dist(v.Label, hash, utils.HoleNum)
+			lastLabel = v.Label
 			addr = v.Host
 		}
 	}

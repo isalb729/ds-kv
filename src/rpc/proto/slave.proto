@@ -7,6 +7,7 @@ service Kv {
   rpc Get(GetRequest) returns (GetResponse);
   rpc Put(PutRequest) returns (PutResponse);
   rpc Del(DelRequest) returns (DelResponse);
+  rpc MoveData(MoveDataRequest) returns (MoveDataResponse);
 }
 
 message GetRequest {
@@ -33,4 +34,17 @@ message DelRequest {
 
 message DelResponse {
   bool deleted = 1;
+}
+
+message MoveDataRequest {
+  int32 from_label = 1;
+  int32 to_label = 2;
+}
+
+message MoveDataResponse {
+  message Kv {
+    string key = 1;
+    string value = 2;
+  }
+  repeated Kv kvs = 1;
 }

@@ -272,6 +272,139 @@ func (m *DelResponse) GetDeleted() bool {
 	return false
 }
 
+type MoveDataRequest struct {
+	FromLabel            int32    `protobuf:"varint,1,opt,name=from_label,json=fromLabel,proto3" json:"from_label,omitempty"`
+	ToLabel              int32    `protobuf:"varint,2,opt,name=to_label,json=toLabel,proto3" json:"to_label,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MoveDataRequest) Reset()         { *m = MoveDataRequest{} }
+func (m *MoveDataRequest) String() string { return proto.CompactTextString(m) }
+func (*MoveDataRequest) ProtoMessage()    {}
+func (*MoveDataRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_5203a3ed916706d4, []int{6}
+}
+
+func (m *MoveDataRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MoveDataRequest.Unmarshal(m, b)
+}
+func (m *MoveDataRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MoveDataRequest.Marshal(b, m, deterministic)
+}
+func (m *MoveDataRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MoveDataRequest.Merge(m, src)
+}
+func (m *MoveDataRequest) XXX_Size() int {
+	return xxx_messageInfo_MoveDataRequest.Size(m)
+}
+func (m *MoveDataRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_MoveDataRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MoveDataRequest proto.InternalMessageInfo
+
+func (m *MoveDataRequest) GetFromLabel() int32 {
+	if m != nil {
+		return m.FromLabel
+	}
+	return 0
+}
+
+func (m *MoveDataRequest) GetToLabel() int32 {
+	if m != nil {
+		return m.ToLabel
+	}
+	return 0
+}
+
+type MoveDataResponse struct {
+	Kvs                  []*MoveDataResponse_Kv `protobuf:"bytes,1,rep,name=kvs,proto3" json:"kvs,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}               `json:"-"`
+	XXX_unrecognized     []byte                 `json:"-"`
+	XXX_sizecache        int32                  `json:"-"`
+}
+
+func (m *MoveDataResponse) Reset()         { *m = MoveDataResponse{} }
+func (m *MoveDataResponse) String() string { return proto.CompactTextString(m) }
+func (*MoveDataResponse) ProtoMessage()    {}
+func (*MoveDataResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_5203a3ed916706d4, []int{7}
+}
+
+func (m *MoveDataResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MoveDataResponse.Unmarshal(m, b)
+}
+func (m *MoveDataResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MoveDataResponse.Marshal(b, m, deterministic)
+}
+func (m *MoveDataResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MoveDataResponse.Merge(m, src)
+}
+func (m *MoveDataResponse) XXX_Size() int {
+	return xxx_messageInfo_MoveDataResponse.Size(m)
+}
+func (m *MoveDataResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MoveDataResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MoveDataResponse proto.InternalMessageInfo
+
+func (m *MoveDataResponse) GetKvs() []*MoveDataResponse_Kv {
+	if m != nil {
+		return m.Kvs
+	}
+	return nil
+}
+
+type MoveDataResponse_Kv struct {
+	Key                  string   `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Value                string   `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MoveDataResponse_Kv) Reset()         { *m = MoveDataResponse_Kv{} }
+func (m *MoveDataResponse_Kv) String() string { return proto.CompactTextString(m) }
+func (*MoveDataResponse_Kv) ProtoMessage()    {}
+func (*MoveDataResponse_Kv) Descriptor() ([]byte, []int) {
+	return fileDescriptor_5203a3ed916706d4, []int{7, 0}
+}
+
+func (m *MoveDataResponse_Kv) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MoveDataResponse_Kv.Unmarshal(m, b)
+}
+func (m *MoveDataResponse_Kv) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MoveDataResponse_Kv.Marshal(b, m, deterministic)
+}
+func (m *MoveDataResponse_Kv) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MoveDataResponse_Kv.Merge(m, src)
+}
+func (m *MoveDataResponse_Kv) XXX_Size() int {
+	return xxx_messageInfo_MoveDataResponse_Kv.Size(m)
+}
+func (m *MoveDataResponse_Kv) XXX_DiscardUnknown() {
+	xxx_messageInfo_MoveDataResponse_Kv.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MoveDataResponse_Kv proto.InternalMessageInfo
+
+func (m *MoveDataResponse_Kv) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func (m *MoveDataResponse_Kv) GetValue() string {
+	if m != nil {
+		return m.Value
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*GetRequest)(nil), "GetRequest")
 	proto.RegisterType((*GetResponse)(nil), "GetResponse")
@@ -279,27 +412,35 @@ func init() {
 	proto.RegisterType((*PutResponse)(nil), "PutResponse")
 	proto.RegisterType((*DelRequest)(nil), "DelRequest")
 	proto.RegisterType((*DelResponse)(nil), "DelResponse")
+	proto.RegisterType((*MoveDataRequest)(nil), "MoveDataRequest")
+	proto.RegisterType((*MoveDataResponse)(nil), "MoveDataResponse")
+	proto.RegisterType((*MoveDataResponse_Kv)(nil), "MoveDataResponse.Kv")
 }
 
 func init() { proto.RegisterFile("slave.proto", fileDescriptor_5203a3ed916706d4) }
 
 var fileDescriptor_5203a3ed916706d4 = []byte{
-	// 225 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x90, 0x31, 0x4f, 0xc3, 0x30,
-	0x14, 0x84, 0x55, 0x1b, 0x0a, 0x9c, 0x23, 0x84, 0x2c, 0x86, 0x28, 0x03, 0xb2, 0xb2, 0x94, 0xc9,
-	0x03, 0x65, 0x63, 0x43, 0x95, 0x3a, 0xb0, 0x54, 0x19, 0xd9, 0x52, 0xf2, 0x16, 0x62, 0xe1, 0x10,
-	0xdb, 0x91, 0xf8, 0xf7, 0x28, 0x26, 0xc8, 0x5e, 0xb2, 0xf9, 0x74, 0xbe, 0x7b, 0xdf, 0x7b, 0x10,
-	0xce, 0xb4, 0x13, 0xe9, 0x61, 0xb4, 0xde, 0xd6, 0x0f, 0xc0, 0x91, 0x7c, 0x43, 0xdf, 0x81, 0x9c,
-	0x97, 0x77, 0xe0, 0x3d, 0xfd, 0x94, 0x1b, 0xb5, 0x79, 0xbc, 0x69, 0xe6, 0x67, 0xbd, 0x87, 0x88,
-	0xbe, 0x1b, 0xec, 0x97, 0x23, 0x79, 0x0b, 0x66, 0xfb, 0xe8, 0x5f, 0x37, 0xcc, 0xf6, 0xf2, 0x1e,
-	0x97, 0x53, 0x6b, 0x02, 0x95, 0x2c, 0x46, 0xfe, 0x44, 0xfd, 0x0c, 0x9c, 0xc2, 0x7a, 0xe9, 0x4a,
-	0x6a, 0x07, 0x11, 0x53, 0xcb, 0xa8, 0x12, 0x57, 0x1f, 0x23, 0xb5, 0x9e, 0xba, 0x65, 0xde, 0xbf,
-	0x9c, 0x99, 0x0f, 0x64, 0xd6, 0x99, 0x77, 0x10, 0xd1, 0x4f, 0x45, 0x1d, 0x19, 0xca, 0x8a, 0x16,
-	0xf9, 0xf4, 0x09, 0xf6, 0x36, 0x49, 0x05, 0x7e, 0x24, 0x2f, 0x85, 0x4e, 0x87, 0xa8, 0x0a, 0x9d,
-	0x6f, 0xad, 0xc0, 0x4f, 0x61, 0xfe, 0x91, 0xb6, 0xaa, 0x0a, 0x9d, 0xc3, 0x2a, 0xf0, 0x03, 0x19,
-	0x29, 0x74, 0x02, 0xab, 0x0a, 0x9d, 0x51, 0xbc, 0x6e, 0xdf, 0x2f, 0xf4, 0xcb, 0x70, 0x3e, 0x6f,
-	0xe3, 0xdd, 0xf7, 0xbf, 0x01, 0x00, 0x00, 0xff, 0xff, 0x96, 0x6d, 0xf4, 0xe5, 0x86, 0x01, 0x00,
-	0x00,
+	// 320 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x92, 0x4f, 0x4b, 0xf3, 0x40,
+	0x10, 0xc6, 0x49, 0xf6, 0xed, 0xbf, 0xd9, 0xf2, 0x5a, 0x97, 0x1e, 0x62, 0x40, 0x09, 0x39, 0xd8,
+	0x1e, 0x64, 0x85, 0xd6, 0x9b, 0x37, 0x29, 0xf4, 0x50, 0x85, 0x92, 0xa3, 0x17, 0xd9, 0xd8, 0x11,
+	0x21, 0xab, 0x1b, 0x93, 0xcd, 0x82, 0x9f, 0xc5, 0x2f, 0x2b, 0xbb, 0x26, 0x24, 0x54, 0x02, 0xde,
+	0x32, 0xf3, 0x9b, 0x79, 0x66, 0xf2, 0xcc, 0x02, 0x2d, 0xa5, 0x30, 0xc8, 0xf3, 0x42, 0x69, 0x15,
+	0x5f, 0x00, 0x6c, 0x51, 0x27, 0xf8, 0x51, 0x61, 0xa9, 0xd9, 0x0c, 0x48, 0x86, 0x9f, 0x81, 0x17,
+	0x79, 0xcb, 0x49, 0x62, 0x3f, 0xe3, 0x35, 0x50, 0xc7, 0xcb, 0x5c, 0xbd, 0x97, 0xc8, 0xfe, 0x83,
+	0xaf, 0x32, 0xc7, 0xc7, 0x89, 0xaf, 0x32, 0x36, 0x87, 0x81, 0x11, 0xb2, 0xc2, 0xc0, 0x77, 0x2d,
+	0x3f, 0x41, 0x7c, 0x03, 0xb0, 0xaf, 0xfa, 0x45, 0x7b, 0xba, 0x16, 0x40, 0x5d, 0x57, 0x3d, 0x2a,
+	0x80, 0xd1, 0x73, 0x81, 0x42, 0xe3, 0xa1, 0x9e, 0xd7, 0x84, 0x76, 0xe7, 0x0d, 0xca, 0xfe, 0x9d,
+	0x17, 0x40, 0x1d, 0x6f, 0x85, 0x0e, 0x28, 0xb1, 0x23, 0x54, 0x87, 0xf1, 0x0e, 0x4e, 0x1e, 0x94,
+	0xc1, 0x8d, 0xd0, 0xa2, 0x51, 0x3b, 0x07, 0x78, 0x29, 0xd4, 0xdb, 0x93, 0x14, 0x29, 0x4a, 0x57,
+	0x3f, 0x48, 0x26, 0x36, 0x73, 0x6f, 0x13, 0xec, 0x0c, 0xc6, 0x5a, 0xd5, 0xd0, 0x77, 0x70, 0xa4,
+	0x95, 0x43, 0xf1, 0x2b, 0xcc, 0x5a, 0xb1, 0x7a, 0xf4, 0x25, 0x90, 0xcc, 0x94, 0x81, 0x17, 0x91,
+	0x25, 0x5d, 0xcd, 0xf9, 0x31, 0xe7, 0x3b, 0x93, 0xd8, 0x82, 0xf0, 0x0a, 0xfc, 0x9d, 0xf9, 0xab,
+	0x51, 0xab, 0x2f, 0xcf, 0x95, 0x47, 0x40, 0xb6, 0xa8, 0x19, 0xe5, 0xed, 0x01, 0xc3, 0x29, 0xef,
+	0x5e, 0x2b, 0x02, 0xb2, 0xaf, 0x6c, 0x45, 0x7b, 0x8d, 0x70, 0xca, 0xbb, 0x26, 0x47, 0x40, 0x36,
+	0x28, 0x19, 0xe5, 0xad, 0xa1, 0xe1, 0x94, 0x77, 0xdd, 0xbb, 0x86, 0x71, 0xb3, 0x36, 0x9b, 0xf1,
+	0x23, 0xbb, 0xc2, 0xd3, 0x5f, 0xff, 0x74, 0x37, 0x7c, 0xfc, 0xc7, 0x6f, 0xf3, 0x34, 0x1d, 0xba,
+	0x07, 0xb6, 0xfe, 0x0e, 0x00, 0x00, 0xff, 0xff, 0x77, 0x1d, 0x33, 0xb5, 0x6f, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -317,6 +458,7 @@ type KvClient interface {
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 	Put(ctx context.Context, in *PutRequest, opts ...grpc.CallOption) (*PutResponse, error)
 	Del(ctx context.Context, in *DelRequest, opts ...grpc.CallOption) (*DelResponse, error)
+	MoveData(ctx context.Context, in *MoveDataRequest, opts ...grpc.CallOption) (*MoveDataResponse, error)
 }
 
 type kvClient struct {
@@ -354,11 +496,21 @@ func (c *kvClient) Del(ctx context.Context, in *DelRequest, opts ...grpc.CallOpt
 	return out, nil
 }
 
+func (c *kvClient) MoveData(ctx context.Context, in *MoveDataRequest, opts ...grpc.CallOption) (*MoveDataResponse, error) {
+	out := new(MoveDataResponse)
+	err := c.cc.Invoke(ctx, "/Kv/MoveData", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // KvServer is the server API for Kv service.
 type KvServer interface {
 	Get(context.Context, *GetRequest) (*GetResponse, error)
 	Put(context.Context, *PutRequest) (*PutResponse, error)
 	Del(context.Context, *DelRequest) (*DelResponse, error)
+	MoveData(context.Context, *MoveDataRequest) (*MoveDataResponse, error)
 }
 
 func RegisterKvServer(s *grpc.Server, srv KvServer) {
@@ -419,6 +571,24 @@ func _Kv_Del_Handler(srv interface{}, ctx context.Context, dec func(interface{})
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Kv_MoveData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MoveDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KvServer).MoveData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Kv/MoveData",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KvServer).MoveData(ctx, req.(*MoveDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Kv_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "Kv",
 	HandlerType: (*KvServer)(nil),
@@ -434,6 +604,10 @@ var _Kv_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Del",
 			Handler:    _Kv_Del_Handler,
+		},
+		{
+			MethodName: "MoveData",
+			Handler:    _Kv_MoveData_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -49,27 +49,38 @@ func registerSlave(conn *zk.Conn, addr string) (err error) {
 		}
 	}
 	_, err = conn.Create("/data/"+addr, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
-	// don't delete other but get them
-	addrList, err := getAdjacent(conn, addr)
-	log.Println("Adjacent servers: ", addrList)
+	addrList, myMeta, err := getAdjacent(conn, addr)
+	log.Println("Adjacent servers: ", addrList, myMeta)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
+	//for _, v := range addrList {
+	//	kvConn, err := grpc.Dial(v.Host, grpc.WithInsecure())
+	//	if err != nil {
+	//		return err
+	//	}
+	//	kvClient := pb.NewKvClient(kvConn)
+	//	kvClient.MoveData(context.Background(), &pb.MoveDataRequest{
+	//		FromLabel:            0,
+	//		ToLabel:              0,
+	//	})
+	//}
 	return err
 }
 
 func deregisterSlave(conn *zk.Conn, dataDir string) error {
-	// lock the key
+	// TODO: lock the key
 	// redistribute
 	err := utils.DeleteDataDir(dataDir)
 	return err
 }
 
-func getAdjacent(conn *zk.Conn, addr string) ([]string, error) {
+// adjacent, my meta
+func getAdjacent(conn *zk.Conn, addr string) ([]rpc.SlaveMeta, *rpc.SlaveMeta, error) {
 	slaveList, labelList, err := getSlaveList(conn)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	i, j:= -1, -1
 	for k, v := range slaveList {
@@ -79,7 +90,7 @@ func getAdjacent(conn *zk.Conn, addr string) ([]string, error) {
 		}
 	}
 	if i == -1 {
-		return nil, fmt.Errorf("label not found")
+		return nil, nil, fmt.Errorf("label not found")
 	}
 	for k, v := range labelList {
 		if v == slaveList[i].Label {
@@ -88,31 +99,31 @@ func getAdjacent(conn *zk.Conn, addr string) ([]string, error) {
 		}
 	}
 	if j == -1 {
-		return nil, fmt.Errorf("label not found")
+		return nil, nil, fmt.Errorf("label not found")
 	}
 	serverNum := len(labelList)
 	left := (j - 1 + serverNum) % serverNum
 	right := (j + 1) % serverNum
-	var adjServer []string
+	var adjServer []rpc.SlaveMeta
 	if left != j {
 		h := -1
 		for k, v := range slaveList {
-			if v.Label == slaveList[left].Label {
+			if v.Label == labelList[left] {
 				h = k
 				break
 			}
 		}
-		adjServer = append(adjServer, utils.Int2str(labelList[h]))
+		adjServer = append(adjServer, slaveList[h])
 	}
 	if right != j && right != left {
 		h := -1
 		for k, v := range slaveList {
-			if v.Label == slaveList[right].Label {
+			if v.Label == labelList[right] {
 				h = k
 				break
 			}
 		}
-		adjServer = append(adjServer, utils.Int2str(labelList[h]))
+		adjServer = append(adjServer, slaveList[h])
 	}
-	return adjServer, nil
+	return adjServer, &slaveList[i], nil
 }

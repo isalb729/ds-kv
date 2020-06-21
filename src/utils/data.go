@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/gob"
 	"fmt"
+	"io/ioutil"
 	"os"
 )
 
@@ -111,4 +112,29 @@ func CreateDataDir(path string) error {
 func DeleteDataDir(path string) error {
 	return os.RemoveAll(path)
 }
+
+func ReadAllFiles(dir string) ([]string, error) {
+	var fileList []string
+
+	dirList := []string{dir}
+
+	for ; len(dirList) != 0; {
+		dir = dirList[0]
+		dirList = dirList[1:]
+		fileInfos, err := ioutil.ReadDir(dir)
+		if err != nil {
+			return nil, err
+		}
+		for _, file := range fileInfos {
+			if file.IsDir() {
+				dirList = append(dirList, dir + "/" + file.Name())
+			} else {
+				fileList = append(fileList, dir + "/" + file.Name())
+			}
+		}
+	}
+	return fileList, nil
+
+}
+
 
