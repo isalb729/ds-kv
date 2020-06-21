@@ -138,3 +138,16 @@ func ReadAllFiles(dir string) ([]string, error) {
 }
 
 
+func GetPath(base, key string, storeLevel int) (error, string) {
+	if storeLevel < 1 {
+		return fmt.Errorf("a store level is supposed to be at least one"), ""
+	}
+	primes := GetPrimes(storeLevel, 3)
+	hash := int(BasicHash(key))
+	path := base
+	for _, v := range primes {
+		path = path + "/" + Int2str(hash % v)
+	}
+	return nil, path
+}
+

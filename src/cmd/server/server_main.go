@@ -101,7 +101,7 @@ func main() {
 	if *tp == "slave" {
 		err = deregisterSlave(zkConn, *dataDir)
 	} else if *tp == "master" {
-		err = deregisterMaster(zkConn, *dataDir)
+		err = deregisterMaster(zkConn, name)
 	}
 	if err != nil {
 		log.Println(err)

@@ -77,7 +77,7 @@ func registerMaster(conn *zk.Conn, addr string) (err error) {
 	return err
 }
 
-func deregisterMaster(conn *zk.Conn, addr string) error {
+func deregisterMaster(conn *zk.Conn) error {
 	return nil
 }
 

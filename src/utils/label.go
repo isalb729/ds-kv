@@ -66,3 +66,10 @@ func Dist(a, b, max int) int {
 	}
 	return dist
 }
+
+func ShouldBeMoved(key string, toLabel, fromLabel int32) bool {
+	label := BasicHash(key) % HoleNum
+	dto := Dist(int(label), int(toLabel), HoleNum)
+	dfrom := Dist(int(label), int(fromLabel), HoleNum)
+	return dto < dfrom || dto == dfrom && toLabel < fromLabel
+}

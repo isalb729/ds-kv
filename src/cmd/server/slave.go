@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/isalb729/ds-kv/src/rpc"
 	"github.com/isalb729/ds-kv/src/rpc/pb"
@@ -16,7 +17,7 @@ const (
 
 func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir string) error {
 	// TODO: lock register
-	err := registerSlave(conn, addr)
+	err := registerSlave(conn, addr, dataDir)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -35,7 +36,7 @@ func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir stri
 	return nil
 }
 
-func registerSlave(conn *zk.Conn, addr string) (err error) {
+func registerSlave(conn *zk.Conn, addr, dataDir string) (err error) {
 	exist, _, err := conn.Exists("/data")
 	if err != nil {
 		log.Println(err)
@@ -55,24 +56,92 @@ func registerSlave(conn *zk.Conn, addr string) (err error) {
 		log.Println(err)
 		return err
 	}
-	//for _, v := range addrList {
-	//	kvConn, err := grpc.Dial(v.Host, grpc.WithInsecure())
-	//	if err != nil {
-	//		return err
-	//	}
-	//	kvClient := pb.NewKvClient(kvConn)
-	//	kvClient.MoveData(context.Background(), &pb.MoveDataRequest{
-	//		FromLabel:            0,
-	//		ToLabel:              0,
-	//	})
-	//}
+	data := map[string]interface{}{}
+	for _, v := range addrList {
+		kvConn, err := grpc.Dial(v.Host, grpc.WithInsecure())
+		if err != nil {
+			return err
+		}
+		kvClient := pb.NewKvClient(kvConn)
+		rsp, err := kvClient.MoveData(context.Background(), &pb.MoveDataRequest{
+			FromLabel: int32(v.Label),
+			ToLabel:   int32(myMeta.Label),
+		})
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		for _, kv := range rsp.Kvs {
+			data[kv.Key] = kv.Value
+		}
+	}
+	err = writeLocal(data, dataDir)
 	return err
 }
 
-func deregisterSlave(conn *zk.Conn, dataDir string) error {
+func writeLocal(data map[string]interface{}, dataDir string) error {
+	for k, v := range data {
+		err, path := utils.GetPath(dataDir, k, StoreLevel)
+		if err != nil {
+			return err
+		}
+		data := map[string]interface{}{}
+		err = utils.ReadMap(path, &data)
+		if err != nil {
+			return err
+		}
+		err = utils.AppendMap(path, map[string]interface{}{k: v})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func deregisterSlave(conn *zk.Conn, dataDir, addr string) error {
 	// TODO: lock the key
 	// redistribute
-	err := utils.DeleteDataDir(dataDir)
+	//utils.ReadAllFiles(dataDir)
+	addrList, _, err := getAdjacent(conn, addr)
+	paths, err := utils.ReadAllFiles(dataDir)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	for _, path := range paths {
+		data := map[string]interface{}{}
+		err = utils.ReadMap(path, &data)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		for k, v := range data {
+			var addr string
+			if len(addrList) == 0 {
+				log.Println("Warning: there are no server left, data will be lost.")
+				return nil
+			} else if len(addrList) == 1 {
+				addr = addrList[0].Host
+			} else if utils.ShouldBeMoved(k, int32(addrList[0].Label), int32(addrList[1].Label)) {
+				addr = addrList[0].Host
+			} else {
+				addr = addrList[1].Host
+			}
+			conn, err := grpc.Dial(addr, grpc.WithInsecure())
+			if err != nil {
+				return err
+			}
+			kvClient := pb.NewKvClient(conn)
+			_, err = kvClient.Put(context.Background(), &pb.PutRequest{
+				Key:   k,
+				Value: v.(string),
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+	err = utils.DeleteDataDir(dataDir)
 	return err
 }
 
@@ -82,7 +151,7 @@ func getAdjacent(conn *zk.Conn, addr string) ([]rpc.SlaveMeta, *rpc.SlaveMeta, e
 	if err != nil {
 		return nil, nil, err
 	}
-	i, j:= -1, -1
+	i, j := -1, -1
 	for k, v := range slaveList {
 		if v.Host == addr {
 			i = k
