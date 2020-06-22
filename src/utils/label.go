@@ -1,4 +1,5 @@
 package utils
+
 // no more than 137 servers!
 const (
 	HoleNum = 137

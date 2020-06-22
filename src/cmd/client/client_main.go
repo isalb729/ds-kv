@@ -30,7 +30,7 @@ func main() {
 	default:
 		log.Fatalln("not implemented option")
 	}
-	masterCli := pb.NewMetaClient(conn)
+	masterCli := pb.NewMasterClient(conn)
 	try(&client.KvCli{Mc: masterCli})
 	err = conn.Close()
 	if err != nil {

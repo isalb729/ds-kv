@@ -22,14 +22,15 @@ func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir stri
 		log.Println(err)
 		return err
 	}
-	log.Printf("registered slave: %s\n", addr)
+	log.Printf("Data directory: %s\n", dataDir)
+	log.Printf("Registered slave: %s\n", addr)
 	err = utils.CreateDataDir(dataDir)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 	// set data direct
-	pb.RegisterKvServer(grpcServer, &rpc.KvOp{
+	pb.RegisterDataServer(grpcServer, &rpc.KvOp{
 		DataDir:    dataDir,
 		StoreLevel: StoreLevel,
 	})
@@ -62,7 +63,7 @@ func registerSlave(conn *zk.Conn, addr, dataDir string) (err error) {
 		if err != nil {
 			return err
 		}
-		kvClient := pb.NewKvClient(kvConn)
+		kvClient := pb.NewDataClient(kvConn)
 		rsp, err := kvClient.MoveData(context.Background(), &pb.MoveDataRequest{
 			FromLabel: int32(v.Label),
 			ToLabel:   int32(myMeta.Label),
@@ -99,8 +100,9 @@ func writeLocal(data map[string]interface{}, dataDir string) error {
 }
 
 func deregisterSlave(conn *zk.Conn, dataDir, addr string) error {
-	// TODO: lock the key
+	// TODO: lock the key, defer unlock
 	// redistribute
+	defer utils.DeleteDataDir(dataDir)
 	addrList, _, err := getAdjacent(conn, addr)
 	paths, err := utils.ReadAllFiles(dataDir)
 	if err != nil {
@@ -130,8 +132,8 @@ func deregisterSlave(conn *zk.Conn, dataDir, addr string) error {
 			if err != nil {
 				return err
 			}
-			kvClient := pb.NewKvClient(conn)
-			_, err = kvClient.Put(context.Background(), &pb.PutRequest{
+			dataClient := pb.NewDataClient(conn)
+			_, err = dataClient.Put(context.Background(), &pb.PutRequest{
 				Key:   k,
 				Value: v.(string),
 			})
@@ -140,7 +142,6 @@ func deregisterSlave(conn *zk.Conn, dataDir, addr string) error {
 			}
 		}
 	}
-	err = utils.DeleteDataDir(dataDir)
 	return err
 }
 

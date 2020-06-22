@@ -149,7 +149,7 @@ func (kv KvOp) MoveData(ctx context.Context, request *pb.MoveDataRequest) (*pb.M
 			return nil, err
 		}
 		for k, v := range data {
-			if utils.ShouldBeMoved(v.(string), request.ToLabel, request.FromLabel) {
+			if utils.ShouldBeMoved(k, request.ToLabel, request.FromLabel) {
 				kvs = append(kvs, &pb.MoveDataResponse_Kv{
 					Key:   k,
 					Value: v.(string),

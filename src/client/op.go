@@ -9,7 +9,7 @@ import (
 )
 
 type KvCli struct {
-	Mc pb.MetaClient
+	Mc pb.MasterClient
 }
 
 /**
@@ -28,7 +28,7 @@ func (cli *KvCli) put(key, value string) (error, bool) {
 	if err != nil {
 		return err, false
 	}
-	kvClient := pb.NewKvClient(conn)
+	kvClient := pb.NewDataClient(conn)
 	putRsp, err := kvClient.Put(ctx, &pb.PutRequest{
 		Key:                  key,
 		Value:                value,
@@ -55,7 +55,7 @@ func (cli *KvCli) get(key string) (err error, value string) {
 	if err != nil {
 		return err, ""
 	}
-	kvClient := pb.NewKvClient(conn)
+	kvClient := pb.NewDataClient(conn)
 	getRsp, err := kvClient.Get(ctx, &pb.GetRequest{
 		Key:                  key,
 	})
@@ -84,7 +84,7 @@ func (cli *KvCli) del(key string) (error, bool) {
 	if err != nil {
 		return err, false
 	}
-	kvClient := pb.NewKvClient(conn)
+	kvClient := pb.NewDataClient(conn)
 	delRsp, err := kvClient.Del(ctx, &pb.DelRequest{
 		Key:                  key,
 	})
@@ -95,7 +95,7 @@ func (cli *KvCli) del(key string) (error, bool) {
 }
 
 func (cli *KvCli) dumpAll() (error, []*pb.DumpAllResponse_Data) {
-	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	rsp, err := cli.Mc.DumpAll(ctx, &pb.DumpAllRequest{
 	})
 	if err != nil {

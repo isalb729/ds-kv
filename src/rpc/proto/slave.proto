@@ -3,7 +3,7 @@ syntax = "proto3";
 option go_package = ".;pb";
 
 // client to slave
-service Kv {
+service Data {
   rpc Get(GetRequest) returns (GetResponse);
   rpc GetAll(GetAllRequest) returns (GetAllResponse);
   rpc Put(PutRequest) returns (PutResponse);

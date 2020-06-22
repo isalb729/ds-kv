@@ -3,7 +3,7 @@ syntax = "proto3";
 option go_package = ".;pb";
 
 // client to master
-service Meta {
+service Master {
   rpc GetSlave(GetSlaveRequest) returns (GetSlaveResponse);
   rpc DumpAll(DumpAllRequest) returns (DumpAllResponse);
 }

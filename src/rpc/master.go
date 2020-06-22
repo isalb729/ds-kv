@@ -55,7 +55,7 @@ func (m Master) DumpAll(ctx context.Context, request *pb.DumpAllRequest) (*pb.Du
 			return nil, err
 		}
 
-		kvClient := pb.NewKvClient(conn)
+		kvClient := pb.NewDataClient(conn)
 		rsp, err := kvClient.GetAll(ctx, &pb.GetAllRequest{
 		})
 		if err != nil {

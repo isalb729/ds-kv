@@ -8,12 +8,9 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"sort"
-	"time"
 )
 
-const (
-	Interval = 2 * time.Second
-)
+
 
 func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
 	// TODO: lock register
@@ -31,7 +28,7 @@ func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
 	log.Println("Get slave list: ", slaveList)
 	log.Println("Number of slave list: ", len(slaveList))
 	masterHandler := rpc.Master{SlaveList: slaveList}
-	pb.RegisterMetaServer(grpcServer, &masterHandler)
+	pb.RegisterMasterServer(grpcServer, &masterHandler)
 	//  Listen slave list.
 	_, _, event, err := conn.ChildrenW("/data")
 	if err != nil {
