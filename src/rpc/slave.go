@@ -2,18 +2,24 @@ package rpc
 
 import (
 	"context"
+	"fmt"
 	"github.com/isalb729/ds-kv/src/rpc/pb"
 	"github.com/isalb729/ds-kv/src/utils"
 	"log"
+	"sync"
 )
 
 type KvOp struct {
 	DataDir    string
 	StoreLevel int
+	// read write lock for each file
+	RwLock  map[string]*sync.RWMutex
 }
 
-func (kv KvOp) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse, error) {
+func (kv *KvOp) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse, error) {
 	// TODO lock
+	fmt.Println("entering get")
+	defer fmt.Println("exiting get")
 	key := request.Key
 	err, path := utils.GetPath(kv.DataDir, key, kv.StoreLevel)
 	if err != nil {
@@ -21,6 +27,11 @@ func (kv KvOp) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse
 		return nil, err
 	}
 	data := map[string]interface{}{}
+	if kv.RwLock[path] == nil {
+		kv.RwLock[path] = new(sync.RWMutex)
+	}
+	kv.RwLock[path].RLock()
+	defer kv.RwLock[path].RUnlock()
 	err = utils.ReadMap(path, &data)
 	if err != nil {
 		log.Println(err)
@@ -40,7 +51,18 @@ func (kv KvOp) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse
 	}
 }
 
-func (kv KvOp) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
+func (kv *KvOp) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
+	fmt.Println("entering getAll")
+	defer fmt.Println("exiting getAll")
+	// never deadlock
+	for _, lock := range kv.RwLock {
+		lock.RLock()
+	}
+	defer func() {
+		for _, lock := range kv.RwLock {
+			lock.RUnlock()
+		}
+	}()
 	paths, err := utils.ReadAllFiles(kv.DataDir)
 	if err != nil {
 		log.Println(err)
@@ -66,8 +88,9 @@ func (kv KvOp) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAl
 	}, nil
 }
 
-func (kv KvOp) Put(ctx context.Context, request *pb.PutRequest) (*pb.PutResponse, error) {
-	// TODO LOCK
+func (kv *KvOp) Put(ctx context.Context, request *pb.PutRequest) (*pb.PutResponse, error) {
+	fmt.Println("entering put")
+	defer fmt.Println("exiting put")
 	key := request.Key
 	val := request.Value
 	err, path := utils.GetPath(kv.DataDir, key, kv.StoreLevel)
@@ -78,6 +101,11 @@ func (kv KvOp) Put(ctx context.Context, request *pb.PutRequest) (*pb.PutResponse
 	created := true
 
 	data := map[string]interface{}{}
+	if kv.RwLock[path] == nil {
+		kv.RwLock[path] = new(sync.RWMutex)
+	}
+	kv.RwLock[path].Lock()
+	defer kv.RwLock[path].Unlock()
 	err = utils.ReadMap(path, &data)
 	if err != nil {
 		log.Println(err)
@@ -104,14 +132,20 @@ func (kv KvOp) Put(ctx context.Context, request *pb.PutRequest) (*pb.PutResponse
 	}, nil
 }
 
-func (kv KvOp) Del(ctx context.Context, request *pb.DelRequest) (*pb.DelResponse, error) {
-	// TODO lock
+func (kv *KvOp) Del(ctx context.Context, request *pb.DelRequest) (*pb.DelResponse, error) {
+	fmt.Println("entering del")
+	defer fmt.Println("exiting del")
 	key := request.Key
 	err, path := utils.GetPath(kv.DataDir, key, kv.StoreLevel)
 	if err != nil {
 		return nil, err
 	}
 	data := map[string]interface{}{}
+	if kv.RwLock[path] == nil {
+		kv.RwLock[path] = new(sync.RWMutex)
+	}
+	kv.RwLock[path].Lock()
+	defer kv.RwLock[path].Unlock()
 	err = utils.ReadMap(path, &data)
 	if err != nil {
 		log.Println(err)
@@ -134,7 +168,17 @@ func (kv KvOp) Del(ctx context.Context, request *pb.DelRequest) (*pb.DelResponse
 	}
 }
 
-func (kv KvOp) MoveData(ctx context.Context, request *pb.MoveDataRequest) (*pb.MoveDataResponse, error) {
+func (kv *KvOp) MoveData(ctx context.Context, request *pb.MoveDataRequest) (*pb.MoveDataResponse, error) {
+	fmt.Println("entering move")
+	defer fmt.Println("exiting move")
+	for _, lock := range kv.RwLock {
+		lock.Lock()
+	}
+	defer func() {
+		for _, lock := range kv.RwLock {
+			lock.Unlock()
+		}
+	}()
 	paths, err := utils.ReadAllFiles(kv.DataDir)
 	if err != nil {
 		log.Println(err)

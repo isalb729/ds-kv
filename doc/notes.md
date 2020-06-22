@@ -42,7 +42,7 @@ unit test
 8. loadtest
 
 
-再做锁　注册读写锁在zookeeper实现，对同一文件的读写锁　读接写算一个写锁　readall不需要
+再做锁　读接写算一个写锁　readall不需要
 再做client可链接多个master，client-shell，重试机制(go func 监听ping)
 再做master和data的standby，每次操作把数据放到standby，这个操作的锁和原操作一样
 测试并发　写并发脚本

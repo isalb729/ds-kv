@@ -14,18 +14,18 @@ func Concurrent(cli *KvCli) {
 
 func Sequential(cli *KvCli) {
 	put := func (key, val string) {
-		fmt.Printf("put key: %s val: %s\n", key, val)
-		fmt.Println(cli.put(key, val))
+		err, _ := cli.put(key, val)
+		fmt.Printf("put key: %s val: %s err: %v\n", key, val, err)
 	}
 
-	//get := func(key string) {
-	//	fmt.Printf("get key: %s\n", key)
-	//	fmt.Println(cli.get(key))
-	//}
+	get := func(key string, num int) {
+		err, val := cli.get(key)
+		fmt.Printf("%d get key: %s, err: %v, val: %s\n",num, key, err, val)
+	}
 
 	//del := func(key string) {
-	//	fmt.Printf("del key: %s\n", key)
-	//	fmt.Println(cli.del(key))
+	//	err, _ := cli.del(key)
+	//	fmt.Printf("del key: %s err: %v\n", key, err)
 	//}
 
 	dumpAll := func() {
@@ -43,11 +43,64 @@ func Sequential(cli *KvCli) {
 			fmt.Println()
 		}
 	}
-	put("os", "100")
-	put("ds", "98")
-	put("ca", "97")
-	put("st", "96")
+	exit := make(chan int, 10)
+	go func() {
+		put("os", "100")
+		exit<-1
+	}()
+	go func() {
+		put("os", "99")
+		exit<-1
+	}()
+	go func() {
+		put("os", "98")
+		exit<-1
+	}()
+	go func() {
+		put("os", "97")
+		exit<-1
+	}()
+	go func() {
+		get("os", 1)
+		get("os", 1)
+		get("os", 1)
+		get("os", 1)
+		get("os", 1)
+		exit<-1
+	}()
+	go func() {
+		get("os", 2)
+		get("os", 2)
+		get("os", 2)
+		get("os", 2)
+		get("os", 2)
+		exit<-1
+	}()
+	go func() {
+		get("os", 3)
+		get("os", 3)
+		get("os", 3)
+		get("os", 3)
+		exit<-1
+	}()
+	<-exit
+	<-exit
+	<-exit
+	<-exit
+	<-exit
+	<-exit
+	<-exit
 	dumpAll()
+
+	//put("os", "100")
+	//put("ds", "98")
+	//put("ca", "97")
+	//put("st", "96")
+	//get("os")
+	//get("ds")
+	//get("ca")
+	//get("st")
+	//dumpAll()
 	//get("os")
 	//get("ds")
 	//get("ca")

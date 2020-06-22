@@ -9,6 +9,7 @@ import (
 	"github.com/samuel/go-zookeeper/zk"
 	"google.golang.org/grpc"
 	"log"
+	"sync"
 )
 
 const (
@@ -32,6 +33,7 @@ func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir stri
 	pb.RegisterDataServer(grpcServer, &rpc.KvOp{
 		DataDir:    dataDir,
 		StoreLevel: StoreLevel,
+		RwLock: map[string]*sync.RWMutex{},
 	})
 	return nil
 }
