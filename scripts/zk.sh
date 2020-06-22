@@ -11,11 +11,10 @@ for zk in $ZKLIST
 do
     $ZK/$zk/bin/zkServer.sh $CMD
 done
-sleep 20
-PS=$(ps -ef | grep zk- | grep -v grep | awk '{print $2}')
 if [[ ($CMD = restart) || ($CMD = start) ]]
 then
   ZKLIST=($ZKLIST)
+  PS=$(ps -ef | grep zk- | grep -v grep | awk '{print $2}')
   if [ ${#PS[@]} -ne ${#ZKLIST[@]} ]
   then
     echo "FAIL; only ${#PS[@]} zks are started"

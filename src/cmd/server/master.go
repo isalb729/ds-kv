@@ -13,8 +13,6 @@ import (
 
 
 func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
-	// TODO: lock register
-	// defer lock
 	err := registerMaster(conn, addr)
 	if err != nil {
 		return err
@@ -36,7 +34,6 @@ func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
 	}
 	go func() {
 		for {
-			/* todo: multiple at the same time*/
 			e := <-event
 			if e.Type == zk.EventNodeChildrenChanged {
 				masterHandler.SlaveList, _, err = getSlaveList(conn)
@@ -47,12 +44,12 @@ func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
 			}
 			_, _, event, err = conn.ChildrenW("/data")
 			if err != nil {
-				// TODO: do deregister after fatal or use panic and recover
 				panic(err)
 			}
 		}
 	}()
-	// TODO: unlock register
+
+
 	return nil
 }
 

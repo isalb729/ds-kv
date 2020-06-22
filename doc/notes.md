@@ -42,21 +42,14 @@ unit test
 8. loadtest
 
 
-register and deregister panic and recover
-先做服务器数量不变时 get put delete
-然后做服务器数量删除时
-再做服务器数量增加时
+再做锁　注册读写锁在zookeeper实现，对同一文件的读写锁　读接写算一个写锁　readall不需要
+再做client可链接多个master，client-shell，重试机制(go func 监听ping)
+再做master和data的standby，每次操作把数据放到standby，这个操作的锁和原操作一样
+测试并发　写并发脚本
+一致性检查
 
-再做锁
-再做master的备份，client可链接多个master，一次只有一个master正常，第一个成功
-multi-master concurrency control
-测试
-剩下的到7.30做
-重试机制
-You should build standby node for data node (at least two), and backup data in standby node.
-
-case:
-a deregister
-c stop server
 写注释
-加密码
+写makefile和script和report
+提交
+思考答辩模式
+You should build standby node for data node (at least two), and backup data in standby node.

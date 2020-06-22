@@ -16,7 +16,6 @@ const (
 )
 
 func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir string) error {
-	// TODO: lock register
 	err := registerSlave(conn, addr, dataDir)
 	if err != nil {
 		log.Println(err)
@@ -38,6 +37,8 @@ func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir stri
 }
 
 func registerSlave(conn *zk.Conn, addr, dataDir string) (err error) {
+	//test register lock
+	//time.Sleep(5*time.Second)
 	exist, _, err := conn.Exists("/data")
 	if err != nil {
 		log.Println(err)
@@ -100,7 +101,6 @@ func writeLocal(data map[string]interface{}, dataDir string) error {
 }
 
 func deregisterSlave(conn *zk.Conn, dataDir, addr string) error {
-	// TODO: lock the key, defer unlock
 	// redistribute
 	defer utils.DeleteDataDir(dataDir)
 	addrList, _, err := getAdjacent(conn, addr)

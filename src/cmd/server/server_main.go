@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/isalb729/ds-kv/src/utils"
 	"github.com/isalb729/ds-kv/src/zookeeper"
+	"github.com/samuel/go-zookeeper/zk"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -12,6 +13,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 )
 
 type Cfg struct {
@@ -39,7 +41,7 @@ func main() {
 	if *dataDir != "" && (*dataDir)[len(*dataDir) - 1] == '/' {
 		*dataDir = (*dataDir)[:len(*dataDir) - 1]
 	}
-	zkConn, err := zookeeper.Connect(cfg.Zk)
+	zkConn, _, err := zk.Connect(cfg.Zk, 5 * time.Second)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -58,23 +60,38 @@ func main() {
 	name := host + ":" + port
 	log.Printf("Server name: %s\n", name)
 	grpcServer := grpc.NewServer()
+	// create master directory if not exist
+	exist, _, err := zkConn.Exists("/slock")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if !exist {
+		_, err := zkConn.Create("/slock", nil, 0, zk.WorldACL(zk.PermAll))
+		if err != nil {
+			log.Fatalln(err)
+		}
+		_, err = zkConn.Create("/slock/register", nil, 0, zk.WorldACL(zk.PermAll))
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
+	relock, err := zookeeper.Lock(zkConn, "register")
+	if err != nil {
+		log.Fatalln(err)
+	}
 	switch *tp {
 	case "master":
 		err = InitMaster(grpcServer, zkConn, name)
-		if err != nil {
-			log.Fatalln("Fail to init master", err)
-		}
 	case "slave":
 		err = InitSlave(grpcServer, zkConn, name, *dataDir)
-		if err != nil {
-			log.Fatalln("Fail to init slave", err)
-		}
 	default:
-		log.Fatalln("Wrong type: only master or slave is supported")
+		err = fmt.Errorf("wrong type: only master or slave is supported")
+	}
+	if err != nil {
+		log.Fatalln("Fail to init slave", err)
 	}
 	log.Printf("Server run on addr: %s\n", lis.Addr())
-
-	// run as a thread
+	err = zookeeper.UnLock(zkConn, relock)
 	errChan := make(chan error)
 	go func() {
 		if err :=  grpcServer.Serve(lis); err != nil {
@@ -90,13 +107,22 @@ func main() {
 		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 		errChan <- fmt.Errorf("%s", <-c)
 	}()
+	if err != nil {
+		log.Println(err)
+		return
+	}
 	log.Println("Shutting down the service...", <-errChan)
 
-	/* TODO re/degister lock*/
+
 	// stop the panicking
 	r := recover()
 	if r != nil {
 		log.Println("Recovering from", r)
+	}
+
+	delock, err := zookeeper.Lock(zkConn, "register")
+	if err != nil {
+		log.Println(err)
 	}
 	if *tp == "slave" {
 		err = deregisterSlave(zkConn, *dataDir, name)
@@ -108,5 +134,8 @@ func main() {
 	} else {
 		log.Printf("Deregistered %s %s\n", *tp, name)
 	}
-	// TODO: unlock register
+	err = zookeeper.UnLock(zkConn, delock)
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
