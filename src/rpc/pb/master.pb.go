@@ -100,24 +100,217 @@ func (m *GetSlaveResponse) GetAddr() string {
 	return ""
 }
 
+type DumpAllRequest struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *DumpAllRequest) Reset()         { *m = DumpAllRequest{} }
+func (m *DumpAllRequest) String() string { return proto.CompactTextString(m) }
+func (*DumpAllRequest) ProtoMessage()    {}
+func (*DumpAllRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f9c348dec43a6705, []int{2}
+}
+
+func (m *DumpAllRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DumpAllRequest.Unmarshal(m, b)
+}
+func (m *DumpAllRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DumpAllRequest.Marshal(b, m, deterministic)
+}
+func (m *DumpAllRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DumpAllRequest.Merge(m, src)
+}
+func (m *DumpAllRequest) XXX_Size() int {
+	return xxx_messageInfo_DumpAllRequest.Size(m)
+}
+func (m *DumpAllRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_DumpAllRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DumpAllRequest proto.InternalMessageInfo
+
+type DumpAllResponse struct {
+	Data                 []*DumpAllResponse_Data `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                `json:"-"`
+	XXX_unrecognized     []byte                  `json:"-"`
+	XXX_sizecache        int32                   `json:"-"`
+}
+
+func (m *DumpAllResponse) Reset()         { *m = DumpAllResponse{} }
+func (m *DumpAllResponse) String() string { return proto.CompactTextString(m) }
+func (*DumpAllResponse) ProtoMessage()    {}
+func (*DumpAllResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f9c348dec43a6705, []int{3}
+}
+
+func (m *DumpAllResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DumpAllResponse.Unmarshal(m, b)
+}
+func (m *DumpAllResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DumpAllResponse.Marshal(b, m, deterministic)
+}
+func (m *DumpAllResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DumpAllResponse.Merge(m, src)
+}
+func (m *DumpAllResponse) XXX_Size() int {
+	return xxx_messageInfo_DumpAllResponse.Size(m)
+}
+func (m *DumpAllResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_DumpAllResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DumpAllResponse proto.InternalMessageInfo
+
+func (m *DumpAllResponse) GetData() []*DumpAllResponse_Data {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+type DumpAllResponse_Data struct {
+	Host                 string                       `protobuf:"bytes,1,opt,name=host,proto3" json:"host,omitempty"`
+	Label                int32                        `protobuf:"varint,2,opt,name=label,proto3" json:"label,omitempty"`
+	Kvls                 []*DumpAllResponse_Data_Kvls `protobuf:"bytes,3,rep,name=kvls,proto3" json:"kvls,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                     `json:"-"`
+	XXX_unrecognized     []byte                       `json:"-"`
+	XXX_sizecache        int32                        `json:"-"`
+}
+
+func (m *DumpAllResponse_Data) Reset()         { *m = DumpAllResponse_Data{} }
+func (m *DumpAllResponse_Data) String() string { return proto.CompactTextString(m) }
+func (*DumpAllResponse_Data) ProtoMessage()    {}
+func (*DumpAllResponse_Data) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f9c348dec43a6705, []int{3, 0}
+}
+
+func (m *DumpAllResponse_Data) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DumpAllResponse_Data.Unmarshal(m, b)
+}
+func (m *DumpAllResponse_Data) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DumpAllResponse_Data.Marshal(b, m, deterministic)
+}
+func (m *DumpAllResponse_Data) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DumpAllResponse_Data.Merge(m, src)
+}
+func (m *DumpAllResponse_Data) XXX_Size() int {
+	return xxx_messageInfo_DumpAllResponse_Data.Size(m)
+}
+func (m *DumpAllResponse_Data) XXX_DiscardUnknown() {
+	xxx_messageInfo_DumpAllResponse_Data.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DumpAllResponse_Data proto.InternalMessageInfo
+
+func (m *DumpAllResponse_Data) GetHost() string {
+	if m != nil {
+		return m.Host
+	}
+	return ""
+}
+
+func (m *DumpAllResponse_Data) GetLabel() int32 {
+	if m != nil {
+		return m.Label
+	}
+	return 0
+}
+
+func (m *DumpAllResponse_Data) GetKvls() []*DumpAllResponse_Data_Kvls {
+	if m != nil {
+		return m.Kvls
+	}
+	return nil
+}
+
+type DumpAllResponse_Data_Kvls struct {
+	Key                  string   `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Value                string   `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+	Label                int32    `protobuf:"varint,3,opt,name=label,proto3" json:"label,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *DumpAllResponse_Data_Kvls) Reset()         { *m = DumpAllResponse_Data_Kvls{} }
+func (m *DumpAllResponse_Data_Kvls) String() string { return proto.CompactTextString(m) }
+func (*DumpAllResponse_Data_Kvls) ProtoMessage()    {}
+func (*DumpAllResponse_Data_Kvls) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f9c348dec43a6705, []int{3, 0, 0}
+}
+
+func (m *DumpAllResponse_Data_Kvls) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DumpAllResponse_Data_Kvls.Unmarshal(m, b)
+}
+func (m *DumpAllResponse_Data_Kvls) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DumpAllResponse_Data_Kvls.Marshal(b, m, deterministic)
+}
+func (m *DumpAllResponse_Data_Kvls) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DumpAllResponse_Data_Kvls.Merge(m, src)
+}
+func (m *DumpAllResponse_Data_Kvls) XXX_Size() int {
+	return xxx_messageInfo_DumpAllResponse_Data_Kvls.Size(m)
+}
+func (m *DumpAllResponse_Data_Kvls) XXX_DiscardUnknown() {
+	xxx_messageInfo_DumpAllResponse_Data_Kvls.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DumpAllResponse_Data_Kvls proto.InternalMessageInfo
+
+func (m *DumpAllResponse_Data_Kvls) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func (m *DumpAllResponse_Data_Kvls) GetValue() string {
+	if m != nil {
+		return m.Value
+	}
+	return ""
+}
+
+func (m *DumpAllResponse_Data_Kvls) GetLabel() int32 {
+	if m != nil {
+		return m.Label
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterType((*GetSlaveRequest)(nil), "GetSlaveRequest")
 	proto.RegisterType((*GetSlaveResponse)(nil), "GetSlaveResponse")
+	proto.RegisterType((*DumpAllRequest)(nil), "DumpAllRequest")
+	proto.RegisterType((*DumpAllResponse)(nil), "DumpAllResponse")
+	proto.RegisterType((*DumpAllResponse_Data)(nil), "DumpAllResponse.Data")
+	proto.RegisterType((*DumpAllResponse_Data_Kvls)(nil), "DumpAllResponse.Data.Kvls")
 }
 
 func init() { proto.RegisterFile("master.proto", fileDescriptor_f9c348dec43a6705) }
 
 var fileDescriptor_f9c348dec43a6705 = []byte{
-	// 134 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0xc9, 0x4d, 0x2c, 0x2e,
-	0x49, 0x2d, 0xd2, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x57, 0x52, 0xe6, 0xe2, 0x77, 0x4f, 0x2d, 0x09,
-	0xce, 0x49, 0x2c, 0x4b, 0x0d, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e, 0x11, 0x12, 0xe0, 0x62, 0xce,
-	0x4e, 0xad, 0x94, 0x60, 0x54, 0x60, 0xd4, 0xe0, 0x0c, 0x02, 0x31, 0x95, 0xd4, 0xb8, 0x04, 0x10,
-	0x8a, 0x8a, 0x0b, 0xf2, 0xf3, 0x8a, 0x53, 0x85, 0x84, 0xb8, 0x58, 0x12, 0x53, 0x52, 0x8a, 0xa0,
-	0xca, 0xc0, 0x6c, 0x23, 0x73, 0x2e, 0x16, 0xdf, 0xd4, 0x92, 0x44, 0x21, 0x7d, 0x2e, 0x0e, 0x98,
-	0x7a, 0x21, 0x01, 0x3d, 0x34, 0xf3, 0xa5, 0x04, 0xf5, 0xd0, 0x0d, 0x73, 0x62, 0x8b, 0x62, 0xd1,
-	0xb3, 0x2e, 0x48, 0x4a, 0x62, 0x03, 0x3b, 0xca, 0x18, 0x10, 0x00, 0x00, 0xff, 0xff, 0x3f, 0x47,
-	0x27, 0x82, 0xa4, 0x00, 0x00, 0x00,
+	// 274 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x51, 0xc1, 0x4a, 0xc4, 0x30,
+	0x14, 0x24, 0x36, 0xbb, 0xba, 0x4f, 0x71, 0x6b, 0x50, 0x28, 0x39, 0x95, 0x0a, 0x52, 0x41, 0x22,
+	0xac, 0x47, 0x4f, 0x4a, 0xc1, 0x83, 0x78, 0x89, 0x37, 0x6f, 0xaf, 0xf4, 0x81, 0xb0, 0x59, 0x5b,
+	0x9b, 0xb4, 0xe0, 0x0f, 0xf9, 0x67, 0xfe, 0x87, 0x24, 0xdb, 0x75, 0xb5, 0xeb, 0x6d, 0x26, 0x99,
+	0xcc, 0xbc, 0xcc, 0x83, 0xa3, 0x15, 0x5a, 0x47, 0xad, 0x6a, 0xda, 0xda, 0xd5, 0xd9, 0x39, 0xcc,
+	0x1f, 0xc8, 0x3d, 0x1b, 0xec, 0x49, 0xd3, 0x7b, 0x47, 0xd6, 0x89, 0x18, 0xa2, 0x25, 0x7d, 0x24,
+	0x2c, 0x65, 0xf9, 0x4c, 0x7b, 0x98, 0x5d, 0x40, 0xbc, 0x15, 0xd9, 0xa6, 0x7e, 0xb3, 0x24, 0x04,
+	0x70, 0xac, 0xaa, 0x76, 0x90, 0x05, 0x9c, 0xc5, 0x70, 0x5c, 0x74, 0xab, 0xe6, 0xce, 0x98, 0xc1,
+	0x2b, 0xfb, 0x62, 0x30, 0xff, 0x39, 0x1a, 0x5e, 0x5e, 0x02, 0xaf, 0xd0, 0x61, 0xc2, 0xd2, 0x28,
+	0x3f, 0x5c, 0x9c, 0xa9, 0xd1, 0xbd, 0x2a, 0xd0, 0xa1, 0x0e, 0x12, 0xf9, 0xc9, 0x80, 0x7b, 0xea,
+	0xd3, 0x5e, 0x6b, 0xeb, 0x36, 0x69, 0x1e, 0x8b, 0x53, 0x98, 0x18, 0x2c, 0xc9, 0x24, 0x7b, 0x29,
+	0xcb, 0x27, 0x7a, 0x4d, 0x84, 0x02, 0xbe, 0xec, 0x8d, 0x4d, 0xa2, 0xe0, 0x2e, 0xff, 0x75, 0x57,
+	0x8f, 0xbd, 0xb1, 0x3a, 0xe8, 0x64, 0x01, 0xdc, 0xb3, 0xdd, 0x5f, 0x7b, 0xff, 0x1e, 0x4d, 0x47,
+	0xc1, 0x7f, 0xa6, 0xd7, 0x64, 0x9b, 0x1a, 0xfd, 0x4a, 0x5d, 0x10, 0xf0, 0x27, 0x72, 0x28, 0xae,
+	0xe1, 0x60, 0xd3, 0x94, 0x88, 0xd5, 0xa8, 0x59, 0x79, 0xa2, 0x76, 0x6a, 0xbc, 0x82, 0xfd, 0x61,
+	0x42, 0x31, 0x57, 0x7f, 0xcb, 0x93, 0xf1, 0x78, 0xf8, 0xfb, 0xe9, 0x0b, 0x57, 0xb7, 0x4d, 0x59,
+	0x4e, 0xc3, 0xf2, 0x6e, 0xbe, 0x03, 0x00, 0x00, 0xff, 0xff, 0xb4, 0xe6, 0x52, 0x35, 0xcc, 0x01,
+	0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -133,6 +326,7 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MetaClient interface {
 	GetSlave(ctx context.Context, in *GetSlaveRequest, opts ...grpc.CallOption) (*GetSlaveResponse, error)
+	DumpAll(ctx context.Context, in *DumpAllRequest, opts ...grpc.CallOption) (*DumpAllResponse, error)
 }
 
 type metaClient struct {
@@ -152,9 +346,19 @@ func (c *metaClient) GetSlave(ctx context.Context, in *GetSlaveRequest, opts ...
 	return out, nil
 }
 
+func (c *metaClient) DumpAll(ctx context.Context, in *DumpAllRequest, opts ...grpc.CallOption) (*DumpAllResponse, error) {
+	out := new(DumpAllResponse)
+	err := c.cc.Invoke(ctx, "/Meta/DumpAll", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MetaServer is the server API for Meta service.
 type MetaServer interface {
 	GetSlave(context.Context, *GetSlaveRequest) (*GetSlaveResponse, error)
+	DumpAll(context.Context, *DumpAllRequest) (*DumpAllResponse, error)
 }
 
 func RegisterMetaServer(s *grpc.Server, srv MetaServer) {
@@ -179,6 +383,24 @@ func _Meta_GetSlave_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Meta_DumpAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DumpAllRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MetaServer).DumpAll(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Meta/DumpAll",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MetaServer).DumpAll(ctx, req.(*DumpAllRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Meta_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "Meta",
 	HandlerType: (*MetaServer)(nil),
@@ -186,6 +408,10 @@ var _Meta_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetSlave",
 			Handler:    _Meta_GetSlave_Handler,
+		},
+		{
+			MethodName: "DumpAll",
+			Handler:    _Meta_DumpAll_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

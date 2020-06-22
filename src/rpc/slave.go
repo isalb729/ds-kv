@@ -12,7 +12,6 @@ type KvOp struct {
 	StoreLevel int
 }
 
-
 func (kv KvOp) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse, error) {
 	// TODO lock
 	key := request.Key
@@ -30,15 +29,41 @@ func (kv KvOp) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse
 
 	if data[key] == nil {
 		return &pb.GetResponse{
-			Ok:                   false,
-			Value:                "",
+			Ok:    false,
+			Value: "",
 		}, nil
 	} else {
 		return &pb.GetResponse{
-			Ok:                   true,
-			Value:                data[key].(string),
+			Ok:    true,
+			Value: data[key].(string),
 		}, nil
 	}
+}
+
+func (kv KvOp) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
+	paths, err := utils.ReadAllFiles(kv.DataDir)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	var kvs []*pb.GetAllResponse_Kvs
+	for _, path := range paths {
+		data := map[string]interface{}{}
+		err = utils.ReadMap(path, &data)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		for k, v := range data {
+			kvs = append(kvs, &pb.GetAllResponse_Kvs{
+				Key:   k,
+				Value: v.(string),
+			})
+		}
+	}
+	return &pb.GetAllResponse{
+		Kvs: kvs,
+	}, nil
 }
 
 func (kv KvOp) Put(ctx context.Context, request *pb.PutRequest) (*pb.PutResponse, error) {
@@ -62,7 +87,7 @@ func (kv KvOp) Put(ctx context.Context, request *pb.PutRequest) (*pb.PutResponse
 	if data[key] != nil {
 		if data[key] == val {
 			return &pb.PutResponse{
-				Created:              false,
+				Created: false,
 			}, nil
 		}
 		created = false
@@ -75,7 +100,7 @@ func (kv KvOp) Put(ctx context.Context, request *pb.PutRequest) (*pb.PutResponse
 	}
 
 	return &pb.PutResponse{
-		Created:              created,
+		Created: created,
 	}, nil
 }
 
@@ -94,7 +119,7 @@ func (kv KvOp) Del(ctx context.Context, request *pb.DelRequest) (*pb.DelResponse
 	}
 	if data[key] == nil {
 		return &pb.DelResponse{
-			Deleted:              false,
+			Deleted: false,
 		}, nil
 	} else {
 		delete(data, key)
@@ -104,12 +129,10 @@ func (kv KvOp) Del(ctx context.Context, request *pb.DelRequest) (*pb.DelResponse
 			return nil, err
 		}
 		return &pb.DelResponse{
-			Deleted:              true,
+			Deleted: true,
 		}, nil
 	}
 }
-
-
 
 func (kv KvOp) MoveData(ctx context.Context, request *pb.MoveDataRequest) (*pb.MoveDataResponse, error) {
 	paths, err := utils.ReadAllFiles(kv.DataDir)
@@ -126,11 +149,11 @@ func (kv KvOp) MoveData(ctx context.Context, request *pb.MoveDataRequest) (*pb.M
 			return nil, err
 		}
 		for k, v := range data {
-			kvs = append(kvs, &pb.MoveDataResponse_Kv{
-				Key:                  k,
-				Value:                v.(string),
-			})
-			if utils.ShouldBeMoved(v.(string),  request.ToLabel, request.FromLabel) {
+			if utils.ShouldBeMoved(v.(string), request.ToLabel, request.FromLabel) {
+				kvs = append(kvs, &pb.MoveDataResponse_Kv{
+					Key:   k,
+					Value: v.(string),
+				})
 				delete(data, k)
 			}
 		}
@@ -141,6 +164,6 @@ func (kv KvOp) MoveData(ctx context.Context, request *pb.MoveDataRequest) (*pb.M
 		}
 	}
 	return &pb.MoveDataResponse{
-		Kvs:                  kvs,
+		Kvs: kvs,
 	}, nil
 }

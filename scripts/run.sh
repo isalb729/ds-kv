@@ -1,3 +1,4 @@
+cd src/cmd/server
 go run server_main.go master.go slave.go -cfg=../cfg.yaml -type=master -addr=:9666
 go run server_main.go master.go slave.go -cfg=../cfg.yaml -type=slave -addr=127.0.0.1: -data=data/server1
 go run server_main.go master.go slave.go -cfg=../cfg.yaml -type=slave -addr=127.0.0.1: -data=data/server2

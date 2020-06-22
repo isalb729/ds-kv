@@ -5,6 +5,7 @@ option go_package = ".;pb";
 // client to slave
 service Kv {
   rpc Get(GetRequest) returns (GetResponse);
+  rpc GetAll(GetAllRequest) returns (GetAllResponse);
   rpc Put(PutRequest) returns (PutResponse);
   rpc Del(DelRequest) returns (DelResponse);
   rpc MoveData(MoveDataRequest) returns (MoveDataResponse);
@@ -48,3 +49,15 @@ message MoveDataResponse {
   }
   repeated Kv kvs = 1;
 }
+
+message GetAllRequest {
+}
+
+message GetAllResponse {
+  message Kvs {
+    string key = 1;
+    string value = 2;
+  }
+  repeated Kvs kvs = 1;
+}
+

@@ -51,7 +51,7 @@ func registerSlave(conn *zk.Conn, addr, dataDir string) (err error) {
 	}
 	_, err = conn.Create("/data/"+addr, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
 	addrList, myMeta, err := getAdjacent(conn, addr)
-	log.Println("Adjacent servers: ", addrList, myMeta)
+	log.Println("Adjacent servers: ", addrList)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -101,7 +101,6 @@ func writeLocal(data map[string]interface{}, dataDir string) error {
 func deregisterSlave(conn *zk.Conn, dataDir, addr string) error {
 	// TODO: lock the key
 	// redistribute
-	//utils.ReadAllFiles(dataDir)
 	addrList, _, err := getAdjacent(conn, addr)
 	paths, err := utils.ReadAllFiles(dataDir)
 	if err != nil {

@@ -99,9 +99,9 @@ func main() {
 		log.Println("Recovering from", r)
 	}
 	if *tp == "slave" {
-		err = deregisterSlave(zkConn, *dataDir)
+		err = deregisterSlave(zkConn, *dataDir, name)
 	} else if *tp == "master" {
-		err = deregisterMaster(zkConn, name)
+		err = deregisterMaster(zkConn)
 	}
 	if err != nil {
 		log.Println(err)

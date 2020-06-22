@@ -5,6 +5,7 @@ option go_package = ".;pb";
 // client to master
 service Meta {
   rpc GetSlave(GetSlaveRequest) returns (GetSlaveResponse);
+  rpc DumpAll(DumpAllRequest) returns (DumpAllResponse);
 }
 
 message GetSlaveRequest {
@@ -14,3 +15,20 @@ message GetSlaveRequest {
 message GetSlaveResponse {
   string addr = 1;
 }
+
+message DumpAllRequest {
+}
+message DumpAllResponse {
+  message Data {
+    message Kvls {
+      string key = 1;
+      string value = 2;
+      int32 label = 3;
+    }
+    string host = 1;
+    int32 label = 2;
+    repeated Kvls kvls = 3;
+  }
+  repeated Data data = 1;
+}
+

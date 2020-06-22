@@ -58,3 +58,5 @@ You should build standby node for data node (at least two), and backup data in s
 case:
 a deregister
 c stop server
+写注释
+加密码

@@ -93,3 +93,13 @@ func (cli *KvCli) del(key string) (error, bool) {
 	}
 	return nil, delRsp.Deleted
 }
+
+func (cli *KvCli) dumpAll() (error, []*pb.DumpAllResponse_Data) {
+	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+	rsp, err := cli.Mc.DumpAll(ctx, &pb.DumpAllRequest{
+	})
+	if err != nil {
+		return err, nil
+	}
+	return nil, rsp.Data
+}
