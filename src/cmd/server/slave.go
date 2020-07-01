@@ -29,12 +29,31 @@ func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir stri
 		log.Println(err)
 		return err
 	}
-	// set data direct
-	pb.RegisterDataServer(grpcServer, &rpc.KvOp{
+	list, _, event, err := conn.ChildrenW("/sb")
+	if err != nil {
+		return err
+	}
+	log.Println("StandByList: ", list)
+	kvOp := rpc.KvOp{
 		DataDir:    dataDir,
 		StoreLevel: StoreLevel,
-		RwLock: map[string]*sync.RWMutex{},
-	})
+		RwLock:     map[string]*sync.RWMutex{},
+		Sb:         list,
+	}
+	pb.RegisterDataServer(grpcServer, &kvOp)
+	go func() {
+		for {
+			e := <-event
+			if e.Type == zk.EventNodeChildrenChanged {
+				list, _, event, err = conn.ChildrenW("/sb")
+				if err != nil {
+					panic(err)
+				}
+				kvOp.Sb = list
+				log.Println("StandByList changed: ", list)
+			}
+		}
+	}()
 	return nil
 }
 

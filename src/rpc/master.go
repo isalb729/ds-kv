@@ -20,6 +20,7 @@ type Master struct {
 	SlaveList []SlaveMeta
 }
 
+
 /**
  * client to master
  * send key to get the host of corresponding server

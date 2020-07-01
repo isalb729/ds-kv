@@ -48,8 +48,6 @@ func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
 			}
 		}
 	}()
-
-
 	return nil
 }
 
@@ -67,7 +65,6 @@ func registerMaster(conn *zk.Conn, addr string) (err error) {
 	}
 	// ephemeral
 	_, err = conn.Create("/master/"+addr, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
-
 	return err
 }
 

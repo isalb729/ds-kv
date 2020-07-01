@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/isalb729/ds-kv/src/rpc/pb"
 	"github.com/isalb729/ds-kv/src/utils"
+	"google.golang.org/grpc"
 	"log"
 	"sync"
 )
@@ -13,6 +14,8 @@ type KvOp struct {
 	StoreLevel int
 	// read write lock for each file
 	RwLock  map[string]*sync.RWMutex
+	Sb []string
+	GLock sync.Mutex
 }
 
 type Sb struct {
@@ -20,6 +23,7 @@ type Sb struct {
 	StoreLevel int
 	// lock for each file
 	Lock  map[string]*sync.Mutex
+	GLock sync.Mutex
 }
 
 func (sb *Sb) DeregisterNotify(ctx context.Context, request *pb.DeregisterNotifyRequest) (*pb.NoResponse, error) {
@@ -35,9 +39,11 @@ func (sb *Sb) Put(ctx context.Context, request *pb.PutRequest) (*pb.NoResponse, 
 		return nil, err
 	}
 	data := map[string]interface{}{}
+	sb.GLock.Lock()
 	if sb.Lock[path] == nil {
 		sb.Lock[path] = new(sync.Mutex)
 	}
+	sb.GLock.Unlock()
 	sb.Lock[path].Lock()
 	defer sb.Lock[path].Unlock()
 	err = utils.ReadMap(path, &data)
@@ -61,9 +67,11 @@ func (sb *Sb) Del(ctx context.Context, request *pb.DelRequest) (*pb.NoResponse, 
 		return nil, err
 	}
 	data := map[string]interface{}{}
+	sb.GLock.Lock()
 	if sb.Lock[path] == nil {
 		sb.Lock[path] = new(sync.Mutex)
 	}
+	sb.GLock.Unlock()
 	sb.Lock[path].Lock()
 	defer sb.Lock[path].Unlock()
 	err = utils.ReadMap(path, &data)
@@ -94,9 +102,11 @@ func (kv *KvOp) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetRespons
 		return nil, err
 	}
 	data := map[string]interface{}{}
+	kv.GLock.Lock()
 	if kv.RwLock[path] == nil {
 		kv.RwLock[path] = new(sync.RWMutex)
 	}
+	kv.GLock.Unlock()
 	kv.RwLock[path].RLock()
 	defer kv.RwLock[path].RUnlock()
 	err = utils.ReadMap(path, &data)
@@ -164,11 +174,35 @@ func (kv *KvOp) Put(ctx context.Context, request *pb.PutRequest) (*pb.PutRespons
 	created := true
 
 	data := map[string]interface{}{}
+	kv.GLock.Lock()
 	if kv.RwLock[path] == nil {
 		kv.RwLock[path] = new(sync.RWMutex)
 	}
+	kv.GLock.Unlock()
 	kv.RwLock[path].Lock()
 	defer kv.RwLock[path].Unlock()
+	done := make(chan bool)
+	defer func() {
+		<-done
+	}()
+	go func() {
+		for _, sb := range kv.Sb {
+			sbConn, err := grpc.Dial(sb, grpc.WithInsecure())
+			if err != nil {
+				log.Println("Put to", sb, ":", err)
+				continue
+			}
+			sbClient := pb.NewDataStandByClient(sbConn)
+			_, err = sbClient.Put(context.Background(), &pb.PutRequest{
+				Key:                  key,
+				Value:                val,
+			})
+			if err != nil {
+				log.Println("Put to", sb, ":", err)
+			}
+		}
+		done <- true
+	}()
 	err = utils.ReadMap(path, &data)
 	if err != nil {
 		log.Println(err)
@@ -202,11 +236,34 @@ func (kv *KvOp) Del(ctx context.Context, request *pb.DelRequest) (*pb.DelRespons
 		return nil, err
 	}
 	data := map[string]interface{}{}
+	kv.GLock.Lock()
 	if kv.RwLock[path] == nil {
 		kv.RwLock[path] = new(sync.RWMutex)
 	}
+	kv.GLock.Unlock()
 	kv.RwLock[path].Lock()
 	defer kv.RwLock[path].Unlock()
+	done := make(chan bool)
+	defer func() {
+		<-done
+	}()
+	go func() {
+		for _, sb := range kv.Sb {
+			sbConn, err := grpc.Dial(sb, grpc.WithInsecure())
+			if err != nil {
+				log.Println("Del to", sb, ":", err)
+				continue
+			}
+			sbClient := pb.NewDataStandByClient(sbConn)
+			_, err = sbClient.Del(context.Background(), &pb.DelRequest{
+				Key:                  key,
+			})
+			if err != nil {
+				log.Println("Del to", sb, ":", err)
+			}
+		}
+		done <- true
+	}()
 	err = utils.ReadMap(path, &data)
 	if err != nil {
 		log.Println(err)
