@@ -84,6 +84,9 @@ func main() {
 		err = InitMaster(grpcServer, zkConn, name)
 	case "slave":
 		err = InitSlave(grpcServer, zkConn, name, *dataDir)
+	case "slave-sb":
+		err = InitSlaveSb(grpcServer, zkConn, name, *dataDir)
+	case "master-sb":
 	default:
 		err = fmt.Errorf("wrong type: only master or slave is supported")
 	}

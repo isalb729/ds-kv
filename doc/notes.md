@@ -46,10 +46,10 @@ unit test
 再做master和data的standby，每次操作把数据放到standby，这个操作的锁和原操作一样
 
 data standby:
-注册
-无注销
-发现节点爆炸后注册自己
-每次put和del操作传到所有standby利用go func
+1. 注册 /data-sb　数据节点，必须为空　否则清空
+2. 每次put和del操作传到所有standby利用go func,处理时加本地锁
+3. 节点注销的最后一个操作是通知sb
+4. 发现节点爆炸后（或是所有节点都注销）注册自己此时抢占锁　(），将数据全部转移
 
 ##非功能
 测试并发　写并发脚本

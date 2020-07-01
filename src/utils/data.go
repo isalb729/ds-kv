@@ -91,7 +91,7 @@ func AppendMap(path string, data map[string]interface{}) error {
 		return fmt.Errorf("AppendMap decode data: %v", err)
 	}
 	file.Close()
-	file, err = os.OpenFile(path, os.O_WRONLY | os.O_CREATE, os.ModePerm)
+	file, err = os.OpenFile(path, os.O_WRONLY|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("AppendMap open file: %v", err)
 	}
@@ -127,16 +127,15 @@ func ReadAllFiles(dir string) ([]string, error) {
 		}
 		for _, file := range fileInfos {
 			if file.IsDir() {
-				dirList = append(dirList, dir + "/" + file.Name())
+				dirList = append(dirList, dir+"/"+file.Name())
 			} else {
-				fileList = append(fileList, dir + "/" + file.Name())
+				fileList = append(fileList, dir+"/"+file.Name())
 			}
 		}
 	}
 	return fileList, nil
 
 }
-
 
 func GetPath(base, key string, storeLevel int) (error, string) {
 	if storeLevel < 1 {
@@ -146,8 +145,26 @@ func GetPath(base, key string, storeLevel int) (error, string) {
 	hash := int(BasicHash(key))
 	path := base
 	for _, v := range primes {
-		path = path + "/" + Int2str(hash % v)
+		path = path + "/" + Int2str(hash%v)
 	}
 	return nil, path
 }
 
+func WriteLocal(data map[string]interface{}, dataDir string, storeLevel int) error {
+	for k, v := range data {
+		err, path := GetPath(dataDir, k, storeLevel)
+		if err != nil {
+			return err
+		}
+		data := map[string]interface{}{}
+		err = ReadMap(path, &data)
+		if err != nil {
+			return err
+		}
+		err = AppendMap(path, map[string]interface{}{k: v})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

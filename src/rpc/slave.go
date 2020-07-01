@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"context"
-	"fmt"
 	"github.com/isalb729/ds-kv/src/rpc/pb"
 	"github.com/isalb729/ds-kv/src/utils"
 	"log"
@@ -16,10 +15,78 @@ type KvOp struct {
 	RwLock  map[string]*sync.RWMutex
 }
 
+type Sb struct {
+	DataDir string
+	StoreLevel int
+	// lock for each file
+	Lock  map[string]*sync.Mutex
+}
+
+func (sb *Sb) DeregisterNotify(ctx context.Context, request *pb.DeregisterNotifyRequest) (*pb.NoResponse, error) {
+	panic("")
+}
+
+func (sb *Sb) Put(ctx context.Context, request *pb.PutRequest) (*pb.NoResponse, error) {
+	key := request.Key
+	val := request.Value
+	err, path := utils.GetPath(sb.DataDir, key, sb.StoreLevel)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	data := map[string]interface{}{}
+	if sb.Lock[path] == nil {
+		sb.Lock[path] = new(sync.Mutex)
+	}
+	sb.Lock[path].Lock()
+	defer sb.Lock[path].Unlock()
+	err = utils.ReadMap(path, &data)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	err = utils.AppendMap(path, map[string]interface{}{key: val})
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	return &pb.NoResponse{
+	}, nil
+}
+
+func (sb *Sb) Del(ctx context.Context, request *pb.DelRequest) (*pb.NoResponse, error) {
+	key := request.Key
+	err, path := utils.GetPath(sb.DataDir, key, sb.StoreLevel)
+	if err != nil {
+		return nil, err
+	}
+	data := map[string]interface{}{}
+	if sb.Lock[path] == nil {
+		sb.Lock[path] = new(sync.Mutex)
+	}
+	sb.Lock[path].Lock()
+	defer sb.Lock[path].Unlock()
+	err = utils.ReadMap(path, &data)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	if data[key] == nil {
+		return &pb.NoResponse{
+		}, nil
+	} else {
+		delete(data, key)
+		err = utils.WriteMap(path, data)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		return &pb.NoResponse{
+		}, nil
+	}
+}
+
 func (kv *KvOp) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse, error) {
-	// TODO lock
-	fmt.Println("entering get")
-	defer fmt.Println("exiting get")
 	key := request.Key
 	err, path := utils.GetPath(kv.DataDir, key, kv.StoreLevel)
 	if err != nil {
@@ -52,8 +119,6 @@ func (kv *KvOp) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetRespons
 }
 
 func (kv *KvOp) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
-	fmt.Println("entering getAll")
-	defer fmt.Println("exiting getAll")
 	// never deadlock
 	for _, lock := range kv.RwLock {
 		lock.RLock()
@@ -89,8 +154,6 @@ func (kv *KvOp) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetA
 }
 
 func (kv *KvOp) Put(ctx context.Context, request *pb.PutRequest) (*pb.PutResponse, error) {
-	fmt.Println("entering put")
-	defer fmt.Println("exiting put")
 	key := request.Key
 	val := request.Value
 	err, path := utils.GetPath(kv.DataDir, key, kv.StoreLevel)
@@ -133,8 +196,6 @@ func (kv *KvOp) Put(ctx context.Context, request *pb.PutRequest) (*pb.PutRespons
 }
 
 func (kv *KvOp) Del(ctx context.Context, request *pb.DelRequest) (*pb.DelResponse, error) {
-	fmt.Println("entering del")
-	defer fmt.Println("exiting del")
 	key := request.Key
 	err, path := utils.GetPath(kv.DataDir, key, kv.StoreLevel)
 	if err != nil {
@@ -169,8 +230,6 @@ func (kv *KvOp) Del(ctx context.Context, request *pb.DelRequest) (*pb.DelRespons
 }
 
 func (kv *KvOp) MoveData(ctx context.Context, request *pb.MoveDataRequest) (*pb.MoveDataResponse, error) {
-	fmt.Println("entering move")
-	defer fmt.Println("exiting move")
 	for _, lock := range kv.RwLock {
 		lock.Lock()
 	}

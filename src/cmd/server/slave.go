@@ -79,28 +79,10 @@ func registerSlave(conn *zk.Conn, addr, dataDir string) (err error) {
 			data[kv.Key] = kv.Value
 		}
 	}
-	err = writeLocal(data, dataDir)
+	err = utils.WriteLocal(data, dataDir, StoreLevel)
 	return err
 }
 
-func writeLocal(data map[string]interface{}, dataDir string) error {
-	for k, v := range data {
-		err, path := utils.GetPath(dataDir, k, StoreLevel)
-		if err != nil {
-			return err
-		}
-		data := map[string]interface{}{}
-		err = utils.ReadMap(path, &data)
-		if err != nil {
-			return err
-		}
-		err = utils.AppendMap(path, map[string]interface{}{k: v})
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
 
 func deregisterSlave(conn *zk.Conn, dataDir, addr string) error {
 	// redistribute
@@ -198,3 +180,46 @@ func getAdjacent(conn *zk.Conn, addr string) ([]rpc.SlaveMeta, *rpc.SlaveMeta, e
 	}
 	return adjServer, &slaveList[i], nil
 }
+
+func InitSlaveSb(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir string) error {
+	err := registerSlaveSb(conn, addr, dataDir)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	log.Printf("Data directory: %s\n", dataDir)
+	log.Printf("Registered slave standby: %s\n", addr)
+	err = utils.CreateDataDir(dataDir)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	// set data direct
+	sb := rpc.Sb{
+		DataDir:    dataDir,
+		StoreLevel: StoreLevel,
+		Lock: map[string]*sync.Mutex{},
+	}
+	pb.RegisterDataStandByServer(grpcServer, &sb)
+	// listening
+	return nil
+}
+
+
+func registerSlaveSb(conn *zk.Conn, addr, dataDir string) (err error) {
+	exist, _, err := conn.Exists("/sb")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	if !exist {
+		_, err := conn.Create("/sb", nil, 0, zk.WorldACL(zk.PermAll))
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+	}
+	_, err = conn.Create("/sb/"+addr, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
+	return err
+}
+
