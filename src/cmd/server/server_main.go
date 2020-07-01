@@ -79,13 +79,18 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	tr := false
 	switch *tp {
 	case "master":
 		err = InitMaster(grpcServer, zkConn, name)
 	case "slave":
 		err = InitSlave(grpcServer, zkConn, name, *dataDir)
 	case "slave-sb":
-		err = InitSlaveSb(grpcServer, zkConn, name, *dataDir)
+		trans := make(chan bool)
+		go func() {
+			tr = <-trans
+		}()
+		err = InitSlaveSb(grpcServer, zkConn, name, *dataDir, trans)
 	case "master-sb":
 	default:
 		err = fmt.Errorf("wrong type: only master or slave is supported")
@@ -127,10 +132,17 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
-	if *tp == "slave" {
-		err = deregisterSlave(zkConn, *dataDir, name)
-	} else if *tp == "master" {
+
+	switch *tp {
+	case "master":
 		err = deregisterMaster(zkConn)
+	case "slave":
+		err = deregisterSlave(zkConn, *dataDir, name)
+	case "slave-sb":
+		if tr {
+			err = deregisterSlave(zkConn, *dataDir, name)
+		}
+	case "master-sb":
 	}
 	if err != nil {
 		log.Println(err)

@@ -6,9 +6,12 @@ import (
 	"github.com/isalb729/ds-kv/src/rpc"
 	"github.com/isalb729/ds-kv/src/rpc/pb"
 	"github.com/isalb729/ds-kv/src/utils"
+	"github.com/isalb729/ds-kv/src/zookeeper"
 	"github.com/samuel/go-zookeeper/zk"
 	"google.golang.org/grpc"
 	"log"
+	"net"
+	"strings"
 	"sync"
 )
 
@@ -110,25 +113,27 @@ func deregisterSlave(conn *zk.Conn, dataDir, addr string) error {
 		<-done
 	}()
 	go func() {
-		list, _, err := conn.Children("/sb")
+		list, _, err := conn.Children("/master")
 		if err != nil {
 			log.Println(err)
 		}
-		for _, sb := range list {
-			conn, err := grpc.Dial(sb, grpc.WithInsecure())
-			if err != nil {
-				continue
-			}
-			sbClient := pb.NewDataStandByClient(conn)
-			_, err = sbClient.DeregisterNotify(context.Background(), &pb.DeregisterNotifyRequest{
-				Addr: addr,
-			})
-			if err != nil {
-				log.Println(err)
-			}
+		if len(list) == 0 {
+			log.Println("No master node found")
+		}
+		conn, err := grpc.Dial(list[0], grpc.WithInsecure())
+		if err != nil {
+			log.Println(err)
+		}
+		client := pb.NewMasterClient(conn)
+		_, err = client.DeregisterNotify(context.Background(), &pb.DeregisterNotifyRequest{
+			Addr: addr,
+		})
+		if err != nil {
+			log.Println(err)
 		}
 		done <- true
 	}()
+
 	addrList, _, err := getAdjacent(conn, addr)
 	paths, err := utils.ReadAllFiles(dataDir)
 	if err != nil {
@@ -223,7 +228,7 @@ func getAdjacent(conn *zk.Conn, addr string) ([]rpc.SlaveMeta, *rpc.SlaveMeta, e
 	return adjServer, &slaveList[i], nil
 }
 
-func InitSlaveSb(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir string) error {
+func InitSlaveSb(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir string, trans chan bool) error {
 	err := registerSlaveSb(conn, addr, dataDir)
 	if err != nil {
 		log.Println(err)
@@ -242,36 +247,109 @@ func InitSlaveSb(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir st
 		StoreLevel: StoreLevel,
 		Lock:       map[string]*sync.Mutex{},
 		GLock:      sync.Mutex{},
-		Working:    map[string]bool{},
 	}
 	pb.RegisterDataStandByServer(grpcServer, &sb)
-	// listening
-	list, _, event, err := conn.ChildrenW("/data")
-	if err != nil {
-		return err
-	}
-	for _, v := range list {
-		sb.Working[v] = true
-	}
 	go func() {
 		for {
-			e := <-event
-			list, _, event, err = conn.ChildrenW("/data")
+			_, _, event, err := conn.ExistsW("/sb/"+addr)
 			if err != nil {
 				panic(err)
 			}
-			// only deregister notify is allowed to switch working from true to false
-			if e.Type == zk.EventNodeChildrenChanged {
-				for k, v := range sb.Working {
-					if v && !utils.Include(list, k) {
-						// something terrible happened
-					}
-				}
-				for _, v := range list {
-					sb.Working[v] = true
-				}
+			e := <-event
+			if e.Type == zk.EventNodeDeleted {
+				log.Println("Transfer to data node")
+				break
 			}
 		}
+		trans <- true
+		// transfer
+		relock, err := zookeeper.Lock(conn, "register")
+		_, err = conn.Create("/data/"+addr, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
+		_, _, _ = getSlaveList(conn)
+		var allData map[string]interface{}
+		files, err := utils.ReadAllFiles(dataDir)
+		if err != nil {
+			panic(err)
+		}
+		for _, file := range files {
+			var data map[string]interface{}
+			err = utils.ReadMap(file, &data)
+			if err != nil {
+				panic(err)
+			}
+			utils.MergeMap(&allData, data)
+		}
+		list, _, err := conn.Children("/master")
+		if err != nil {
+			panic(err)
+		}
+		if len(list) == 0 {
+			panic(err)
+		}
+		mconn, err := grpc.Dial(list[0], grpc.WithInsecure())
+		if err != nil {
+			log.Println(err)
+		}
+		mc := pb.NewMasterClient(mconn)
+		for k, _ := range allData {
+			rsp, err := mc.GetSlave(context.Background(), &pb.GetSlaveRequest{
+				Key:                  k,
+			})
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			if rsp.Addr != addr {
+				delete(allData, k)
+			}
+		}
+		err = utils.DeleteDataDir(dataDir)
+		if err != nil {
+			log.Println(err)
+		}
+		err = utils.WriteLocal(allData, dataDir, StoreLevel)
+		if err != nil {
+			log.Println(err)
+		}
+		log.Printf("Data directory: %s\n", dataDir)
+		log.Printf("Registered slave: %s\n", addr)
+		list, _, event, err := conn.ChildrenW("/sb")
+		if err != nil {
+			return
+		}
+		log.Println("StandByList: ", list)
+		kvOp := rpc.KvOp{
+			DataDir:    dataDir,
+			StoreLevel: StoreLevel,
+			RwLock:     map[string]*sync.RWMutex{},
+			Sb:         list,
+		}
+		grpcServer.Stop()
+		pb.RegisterDataServer(grpcServer, &kvOp)
+		split := strings.Split(addr, ":")
+		lis, err := net.Listen("tcp", ":" + split[1])
+		if err != nil {
+			log.Fatalln(err)
+		}
+		_ = zookeeper.UnLock(conn, relock)
+		go func() {
+			for {
+				e := <-event
+				list, _, event, err = conn.ChildrenW("/sb")
+				if err != nil {
+					panic(err)
+				}
+				if e.Type == zk.EventNodeChildrenChanged {
+					kvOp.Sb = list
+					log.Println("StandByList changed: ", list)
+				}
+			}
+		}()
+		err = grpcServer.Serve(lis)
+		if err != nil {
+			panic(err)
+		}
+
 	}()
 	return nil
 }
@@ -291,5 +369,7 @@ func registerSlaveSb(conn *zk.Conn, addr, dataDir string) (err error) {
 	}
 	_, err = conn.Create("/sb/"+addr, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
 	_ = utils.DeleteDataDir(dataDir)
+
 	return err
 }
+

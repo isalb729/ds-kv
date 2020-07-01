@@ -46,8 +46,10 @@ unit test
 再做master和data的standby，每次操作把数据放到standby，这个操作的锁和原操作一样
 
 data standby: standby节点需要先启动，只能保证之后数据的不丢失
-4. 发现节点爆炸后（或是所有节点都注销）注册自己此时抢占锁　(），将数据全部转移
-5. 变身后的注销
+
+
+multi master
+master lock; the one to grab it is the master
 
 ##非功能
 测试并发　写并发脚本

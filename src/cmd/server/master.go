@@ -10,8 +10,6 @@ import (
 	"sort"
 )
 
-
-
 func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
 	err := registerMaster(conn, addr)
 	if err != nil {
@@ -25,30 +23,60 @@ func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
 	}
 	log.Println("Get slave list: ", slaveList)
 	log.Println("Number of slave list: ", len(slaveList))
-	masterHandler := rpc.Master{SlaveList: slaveList}
-	pb.RegisterMasterServer(grpcServer, &masterHandler)
-	//  Listen slave list.
-	_, _, event, err := conn.ChildrenW("/data")
-	if err != nil {
-		return err
+	masterHandler := rpc.Master{
+		SlaveList: slaveList,
+		Working:   map[string]bool{},
 	}
+	pb.RegisterMasterServer(grpcServer, &masterHandler)
 	go func() {
 		for {
+			list, _, event, err := conn.ChildrenW("/data")
+			if err != nil {
+				panic(err)
+			}
 			e := <-event
 			if e.Type == zk.EventNodeChildrenChanged {
-				masterHandler.SlaveList, _, err = getSlaveList(conn)
+				slaveList, _, err = getSlaveList(conn)
 				if err != nil {
 					panic(err)
 				}
-				log.Println("SlaveList changed: ", masterHandler.SlaveList)
-			}
-			_, _, event, err = conn.ChildrenW("/data")
-			if err != nil {
-				panic(err)
+				if len(list) == 0 {
+					go notifyTransData(conn)
+					continue
+				}
+				for k, v := range masterHandler.Working {
+					if v && !utils.Include(list, k) {
+						// something terrible happened
+						go notifyTransData(conn)
+						masterHandler.Working[k] = false
+						break
+					}
+				}
+				for _, v := range list {
+					masterHandler.Working[v] = true
+				}
+				masterHandler.SlaveList = slaveList
+				log.Println("SlaveList changed: ", slaveList)
 			}
 		}
 	}()
 	return nil
+}
+
+func notifyTransData(conn *zk.Conn)  {
+	sb, _, err := conn.Children("/sb")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	if len(sb) == 0 {
+		log.Println("No standby data node available")
+		return
+	}
+	err = conn.Delete("/sb/" + sb[0], -1)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func registerMaster(conn *zk.Conn, addr string) (err error) {

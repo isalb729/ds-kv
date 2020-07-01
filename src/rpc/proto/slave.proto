@@ -12,13 +12,8 @@ service Data {
 }
 
 service DataStandBy {
-  rpc DeregisterNotify(DeregisterNotifyRequest) returns (NoResponse);
   rpc Put(PutRequest) returns (NoResponse);
   rpc Del(DelRequest) returns (NoResponse);
-}
-
-message DeregisterNotifyRequest{
-  string addr = 1;
 }
 
 message NoResponse{

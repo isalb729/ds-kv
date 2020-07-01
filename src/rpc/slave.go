@@ -25,15 +25,8 @@ type Sb struct {
 	Lock  map[string]*sync.Mutex
 	// avoid concurrent map writing
 	GLock sync.Mutex
-	Working map[string]bool
 }
 
-func (sb *Sb) DeregisterNotify(ctx context.Context, request *pb.DeregisterNotifyRequest) (*pb.NoResponse, error) {
-	log.Println("Data server", request.Addr, "deregistered")
-	sb.Working[request.Addr] = false
-	return &pb.NoResponse{
-	}, nil
-}
 
 func (sb *Sb) Put(ctx context.Context, request *pb.PutRequest) (*pb.NoResponse, error) {
 	key := request.Key

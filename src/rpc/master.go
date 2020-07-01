@@ -6,6 +6,7 @@ import (
 	"github.com/isalb729/ds-kv/src/rpc/pb"
 	"github.com/isalb729/ds-kv/src/utils"
 	"google.golang.org/grpc"
+	"log"
 )
 
 /*
@@ -18,8 +19,15 @@ type SlaveMeta struct {
 
 type Master struct {
 	SlaveList []SlaveMeta
+	Working   map[string]bool
 }
 
+func (m *Master) DeregisterNotify(ctx context.Context, request *pb.DeregisterNotifyRequest) (*pb.DeregisterNotifyResponse, error) {
+	log.Println("Data server", request.Addr, "deregistered")
+	m.Working[request.Addr] = false
+	return &pb.DeregisterNotifyResponse{
+	}, nil
+}
 
 /**
  * client to master

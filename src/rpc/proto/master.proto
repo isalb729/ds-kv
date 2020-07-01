@@ -6,8 +6,14 @@ option go_package = ".;pb";
 service Master {
   rpc GetSlave(GetSlaveRequest) returns (GetSlaveResponse);
   rpc DumpAll(DumpAllRequest) returns (DumpAllResponse);
+  rpc DeregisterNotify(DeregisterNotifyRequest) returns (DeregisterNotifyResponse);
+}
+message DeregisterNotifyRequest{
+  string addr = 1;
 }
 
+message  DeregisterNotifyResponse{
+}
 message GetSlaveRequest {
   string key = 1;
 }

@@ -22,6 +22,76 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
+type DeregisterNotifyRequest struct {
+	Addr                 string   `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *DeregisterNotifyRequest) Reset()         { *m = DeregisterNotifyRequest{} }
+func (m *DeregisterNotifyRequest) String() string { return proto.CompactTextString(m) }
+func (*DeregisterNotifyRequest) ProtoMessage()    {}
+func (*DeregisterNotifyRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f9c348dec43a6705, []int{0}
+}
+
+func (m *DeregisterNotifyRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DeregisterNotifyRequest.Unmarshal(m, b)
+}
+func (m *DeregisterNotifyRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DeregisterNotifyRequest.Marshal(b, m, deterministic)
+}
+func (m *DeregisterNotifyRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DeregisterNotifyRequest.Merge(m, src)
+}
+func (m *DeregisterNotifyRequest) XXX_Size() int {
+	return xxx_messageInfo_DeregisterNotifyRequest.Size(m)
+}
+func (m *DeregisterNotifyRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_DeregisterNotifyRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DeregisterNotifyRequest proto.InternalMessageInfo
+
+func (m *DeregisterNotifyRequest) GetAddr() string {
+	if m != nil {
+		return m.Addr
+	}
+	return ""
+}
+
+type DeregisterNotifyResponse struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *DeregisterNotifyResponse) Reset()         { *m = DeregisterNotifyResponse{} }
+func (m *DeregisterNotifyResponse) String() string { return proto.CompactTextString(m) }
+func (*DeregisterNotifyResponse) ProtoMessage()    {}
+func (*DeregisterNotifyResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f9c348dec43a6705, []int{1}
+}
+
+func (m *DeregisterNotifyResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DeregisterNotifyResponse.Unmarshal(m, b)
+}
+func (m *DeregisterNotifyResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DeregisterNotifyResponse.Marshal(b, m, deterministic)
+}
+func (m *DeregisterNotifyResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DeregisterNotifyResponse.Merge(m, src)
+}
+func (m *DeregisterNotifyResponse) XXX_Size() int {
+	return xxx_messageInfo_DeregisterNotifyResponse.Size(m)
+}
+func (m *DeregisterNotifyResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_DeregisterNotifyResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DeregisterNotifyResponse proto.InternalMessageInfo
+
 type GetSlaveRequest struct {
 	Key                  string   `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -33,7 +103,7 @@ func (m *GetSlaveRequest) Reset()         { *m = GetSlaveRequest{} }
 func (m *GetSlaveRequest) String() string { return proto.CompactTextString(m) }
 func (*GetSlaveRequest) ProtoMessage()    {}
 func (*GetSlaveRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f9c348dec43a6705, []int{0}
+	return fileDescriptor_f9c348dec43a6705, []int{2}
 }
 
 func (m *GetSlaveRequest) XXX_Unmarshal(b []byte) error {
@@ -72,7 +142,7 @@ func (m *GetSlaveResponse) Reset()         { *m = GetSlaveResponse{} }
 func (m *GetSlaveResponse) String() string { return proto.CompactTextString(m) }
 func (*GetSlaveResponse) ProtoMessage()    {}
 func (*GetSlaveResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f9c348dec43a6705, []int{1}
+	return fileDescriptor_f9c348dec43a6705, []int{3}
 }
 
 func (m *GetSlaveResponse) XXX_Unmarshal(b []byte) error {
@@ -110,7 +180,7 @@ func (m *DumpAllRequest) Reset()         { *m = DumpAllRequest{} }
 func (m *DumpAllRequest) String() string { return proto.CompactTextString(m) }
 func (*DumpAllRequest) ProtoMessage()    {}
 func (*DumpAllRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f9c348dec43a6705, []int{2}
+	return fileDescriptor_f9c348dec43a6705, []int{4}
 }
 
 func (m *DumpAllRequest) XXX_Unmarshal(b []byte) error {
@@ -142,7 +212,7 @@ func (m *DumpAllResponse) Reset()         { *m = DumpAllResponse{} }
 func (m *DumpAllResponse) String() string { return proto.CompactTextString(m) }
 func (*DumpAllResponse) ProtoMessage()    {}
 func (*DumpAllResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f9c348dec43a6705, []int{3}
+	return fileDescriptor_f9c348dec43a6705, []int{5}
 }
 
 func (m *DumpAllResponse) XXX_Unmarshal(b []byte) error {
@@ -183,7 +253,7 @@ func (m *DumpAllResponse_Data) Reset()         { *m = DumpAllResponse_Data{} }
 func (m *DumpAllResponse_Data) String() string { return proto.CompactTextString(m) }
 func (*DumpAllResponse_Data) ProtoMessage()    {}
 func (*DumpAllResponse_Data) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f9c348dec43a6705, []int{3, 0}
+	return fileDescriptor_f9c348dec43a6705, []int{5, 0}
 }
 
 func (m *DumpAllResponse_Data) XXX_Unmarshal(b []byte) error {
@@ -238,7 +308,7 @@ func (m *DumpAllResponse_Data_Kvls) Reset()         { *m = DumpAllResponse_Data_
 func (m *DumpAllResponse_Data_Kvls) String() string { return proto.CompactTextString(m) }
 func (*DumpAllResponse_Data_Kvls) ProtoMessage()    {}
 func (*DumpAllResponse_Data_Kvls) Descriptor() ([]byte, []int) {
-	return fileDescriptor_f9c348dec43a6705, []int{3, 0, 0}
+	return fileDescriptor_f9c348dec43a6705, []int{5, 0, 0}
 }
 
 func (m *DumpAllResponse_Data_Kvls) XXX_Unmarshal(b []byte) error {
@@ -281,6 +351,8 @@ func (m *DumpAllResponse_Data_Kvls) GetLabel() int32 {
 }
 
 func init() {
+	proto.RegisterType((*DeregisterNotifyRequest)(nil), "DeregisterNotifyRequest")
+	proto.RegisterType((*DeregisterNotifyResponse)(nil), "DeregisterNotifyResponse")
 	proto.RegisterType((*GetSlaveRequest)(nil), "GetSlaveRequest")
 	proto.RegisterType((*GetSlaveResponse)(nil), "GetSlaveResponse")
 	proto.RegisterType((*DumpAllRequest)(nil), "DumpAllRequest")
@@ -292,25 +364,27 @@ func init() {
 func init() { proto.RegisterFile("master.proto", fileDescriptor_f9c348dec43a6705) }
 
 var fileDescriptor_f9c348dec43a6705 = []byte{
-	// 276 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x51, 0x41, 0x4b, 0xf4, 0x30,
-	0x14, 0x24, 0x5f, 0xb3, 0xfd, 0xdc, 0xa7, 0xd8, 0x18, 0x14, 0x4a, 0x4e, 0xa5, 0x82, 0x54, 0x90,
-	0x08, 0xeb, 0xd1, 0x93, 0x52, 0xf0, 0x20, 0x5e, 0xe2, 0xcd, 0x5b, 0x4a, 0x1f, 0x0a, 0x9b, 0xb5,
-	0xb5, 0x49, 0x0b, 0xfe, 0x21, 0xff, 0x99, 0xff, 0x43, 0x92, 0xed, 0xba, 0xda, 0xf5, 0x36, 0x93,
-	0x4c, 0x66, 0x5e, 0xe6, 0xc1, 0xc1, 0x4a, 0x5b, 0x87, 0x9d, 0x6c, 0xbb, 0xc6, 0x35, 0xf9, 0x29,
-	0x24, 0x77, 0xe8, 0x1e, 0x8d, 0x1e, 0x50, 0xe1, 0x5b, 0x8f, 0xd6, 0x71, 0x06, 0xd1, 0x12, 0xdf,
-	0x53, 0x92, 0x91, 0x62, 0xae, 0x3c, 0xcc, 0xcf, 0x80, 0x6d, 0x45, 0xb6, 0x6d, 0x5e, 0x2d, 0x72,
-	0x0e, 0x54, 0xd7, 0x75, 0x37, 0xca, 0x02, 0xce, 0x19, 0x1c, 0x96, 0xfd, 0xaa, 0xbd, 0x31, 0x66,
-	0xf4, 0xca, 0x3f, 0x09, 0x24, 0xdf, 0x47, 0xe3, 0xcb, 0x73, 0xa0, 0xb5, 0x76, 0x3a, 0x25, 0x59,
-	0x54, 0xec, 0x2f, 0x4e, 0xe4, 0xe4, 0x5e, 0x96, 0xda, 0x69, 0x15, 0x24, 0xe2, 0x83, 0x00, 0xf5,
-	0xd4, 0xa7, 0xbd, 0x34, 0xd6, 0x6d, 0xd2, 0x3c, 0xe6, 0xc7, 0x30, 0x33, 0xba, 0x42, 0x93, 0xfe,
-	0xcb, 0x48, 0x31, 0x53, 0x6b, 0xc2, 0x25, 0xd0, 0xe5, 0x60, 0x6c, 0x1a, 0x05, 0x77, 0xf1, 0xa7,
-	0xbb, 0xbc, 0x1f, 0x8c, 0x55, 0x41, 0x27, 0x4a, 0xa0, 0x9e, 0xed, 0xfe, 0xda, 0xfb, 0x0f, 0xda,
-	0xf4, 0x18, 0xfc, 0xe7, 0x6a, 0x4d, 0xb6, 0xa9, 0xd1, 0x8f, 0xd4, 0xc5, 0x33, 0xc4, 0x0f, 0xa1,
-	0x56, 0x7e, 0x09, 0x7b, 0x9b, 0xae, 0x38, 0x93, 0x93, 0x6e, 0xc5, 0x91, 0xdc, 0x29, 0xf2, 0x02,
-	0xfe, 0x8f, 0x33, 0xf2, 0x44, 0xfe, 0xae, 0x4f, 0xb0, 0xe9, 0xf8, 0xb7, 0xf1, 0x13, 0x95, 0xd7,
-	0x6d, 0x55, 0xc5, 0x61, 0x7d, 0x57, 0x5f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x0c, 0x1f, 0x73, 0xdf,
-	0xce, 0x01, 0x00, 0x00,
+	// 319 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x52, 0xb1, 0x4e, 0xc3, 0x30,
+	0x10, 0x95, 0x89, 0x5b, 0xe8, 0x81, 0xa8, 0xb1, 0x40, 0x18, 0x4f, 0x55, 0x90, 0x50, 0x91, 0xc0,
+	0x48, 0x65, 0x64, 0x02, 0x45, 0xea, 0x80, 0x60, 0x30, 0x1b, 0x9b, 0xab, 0x1a, 0xa8, 0xea, 0x92,
+	0x10, 0xbb, 0x91, 0xfa, 0x43, 0xcc, 0xfc, 0x14, 0xff, 0x81, 0xec, 0x26, 0x14, 0x92, 0x76, 0xbb,
+	0xe7, 0xbc, 0x7b, 0xef, 0xf2, 0xee, 0x60, 0x6f, 0xa6, 0xac, 0xd3, 0xb9, 0xc8, 0xf2, 0xd4, 0xa5,
+	0xf1, 0x25, 0x1c, 0x27, 0x3a, 0xd7, 0xaf, 0x13, 0xff, 0xf6, 0x98, 0xba, 0xc9, 0xcb, 0x42, 0xea,
+	0x8f, 0xb9, 0xb6, 0x8e, 0x52, 0xc0, 0x6a, 0x3c, 0xce, 0x19, 0xea, 0xa1, 0x7e, 0x47, 0x86, 0x3a,
+	0xe6, 0xc0, 0x9a, 0x74, 0x9b, 0xa5, 0xef, 0x56, 0xc7, 0xa7, 0xd0, 0x1d, 0x6a, 0xf7, 0x64, 0x54,
+	0xa1, 0x2b, 0x09, 0x02, 0xd1, 0x54, 0x2f, 0x4a, 0x05, 0x5f, 0xc6, 0x67, 0x40, 0x56, 0xa4, 0x65,
+	0xe3, 0x5a, 0x23, 0x02, 0xfb, 0xc9, 0x7c, 0x96, 0xdd, 0x1a, 0x53, 0x6a, 0xc5, 0xdf, 0x08, 0xba,
+	0xbf, 0x4f, 0x65, 0xe7, 0x39, 0xe0, 0xb1, 0x72, 0x8a, 0xa1, 0x5e, 0xd4, 0xdf, 0x1d, 0x1c, 0x89,
+	0xda, 0x77, 0x91, 0x28, 0xa7, 0x64, 0xa0, 0xf0, 0x4f, 0x04, 0xd8, 0x43, 0xef, 0xf6, 0x96, 0x5a,
+	0x57, 0xb9, 0xf9, 0x9a, 0x1e, 0x42, 0xcb, 0xa8, 0x91, 0x36, 0x6c, 0xab, 0x87, 0xfa, 0x2d, 0xb9,
+	0x04, 0x54, 0x00, 0x9e, 0x16, 0xc6, 0xb2, 0x28, 0xa8, 0xf3, 0xb5, 0xea, 0xe2, 0xbe, 0x30, 0x56,
+	0x06, 0x1e, 0x4f, 0x00, 0x7b, 0xd4, 0xfc, 0x6b, 0xaf, 0x5f, 0x28, 0x33, 0xd7, 0x41, 0xbf, 0x23,
+	0x97, 0x60, 0xe5, 0x1a, 0xfd, 0x71, 0x1d, 0x7c, 0x21, 0x68, 0x3f, 0x84, 0x15, 0xd1, 0x2b, 0xd8,
+	0xa9, 0xc2, 0xa2, 0x44, 0xd4, 0xc2, 0xe5, 0x07, 0xa2, 0x91, 0xe4, 0x05, 0x6c, 0x97, 0x43, 0xd2,
+	0xae, 0xf8, 0x9f, 0x1f, 0x27, 0xf5, 0xf9, 0xe9, 0x10, 0x48, 0x7d, 0x99, 0x94, 0x89, 0x0d, 0xe7,
+	0xc0, 0x4f, 0xc4, 0xa6, 0xcd, 0xdf, 0xb5, 0x9f, 0xb1, 0xb8, 0xc9, 0x46, 0xa3, 0x76, 0xb8, 0xa9,
+	0xeb, 0x9f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x82, 0x3f, 0xb0, 0x50, 0x63, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -327,6 +401,7 @@ const _ = grpc.SupportPackageIsVersion4
 type MasterClient interface {
 	GetSlave(ctx context.Context, in *GetSlaveRequest, opts ...grpc.CallOption) (*GetSlaveResponse, error)
 	DumpAll(ctx context.Context, in *DumpAllRequest, opts ...grpc.CallOption) (*DumpAllResponse, error)
+	DeregisterNotify(ctx context.Context, in *DeregisterNotifyRequest, opts ...grpc.CallOption) (*DeregisterNotifyResponse, error)
 }
 
 type masterClient struct {
@@ -355,10 +430,20 @@ func (c *masterClient) DumpAll(ctx context.Context, in *DumpAllRequest, opts ...
 	return out, nil
 }
 
+func (c *masterClient) DeregisterNotify(ctx context.Context, in *DeregisterNotifyRequest, opts ...grpc.CallOption) (*DeregisterNotifyResponse, error) {
+	out := new(DeregisterNotifyResponse)
+	err := c.cc.Invoke(ctx, "/Master/DeregisterNotify", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MasterServer is the server API for Master service.
 type MasterServer interface {
 	GetSlave(context.Context, *GetSlaveRequest) (*GetSlaveResponse, error)
 	DumpAll(context.Context, *DumpAllRequest) (*DumpAllResponse, error)
+	DeregisterNotify(context.Context, *DeregisterNotifyRequest) (*DeregisterNotifyResponse, error)
 }
 
 func RegisterMasterServer(s *grpc.Server, srv MasterServer) {
@@ -401,6 +486,24 @@ func _Master_DumpAll_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Master_DeregisterNotify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeregisterNotifyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MasterServer).DeregisterNotify(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Master/DeregisterNotify",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MasterServer).DeregisterNotify(ctx, req.(*DeregisterNotifyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Master_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "Master",
 	HandlerType: (*MasterServer)(nil),
@@ -412,6 +515,10 @@ var _Master_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DumpAll",
 			Handler:    _Master_DumpAll_Handler,
+		},
+		{
+			MethodName: "DeregisterNotify",
+			Handler:    _Master_DeregisterNotify_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
