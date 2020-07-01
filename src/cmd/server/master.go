@@ -28,18 +28,23 @@ func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
 		Working:   map[string]bool{},
 	}
 	pb.RegisterMasterServer(grpcServer, &masterHandler)
+	list, _, event, err := conn.ChildrenW("/data")
+	if err != nil {
+		panic(err)
+	}
 	go func() {
 		for {
-			list, _, event, err := conn.ChildrenW("/data")
+			e := <-event
+			list, _, event, err = conn.ChildrenW("/data")
 			if err != nil {
 				panic(err)
 			}
-			e := <-event
 			if e.Type == zk.EventNodeChildrenChanged {
-				slaveList, _, err = getSlaveList(conn)
+				masterHandler.SlaveList, _, err = getSlaveList(conn)
 				if err != nil {
 					panic(err)
 				}
+				log.Println("SlaveList changed: ", masterHandler.SlaveList)
 				if len(list) == 0 {
 					go notifyTransData(conn)
 					continue
@@ -55,8 +60,6 @@ func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
 				for _, v := range list {
 					masterHandler.Working[v] = true
 				}
-				masterHandler.SlaveList = slaveList
-				log.Println("SlaveList changed: ", slaveList)
 			}
 		}
 	}()

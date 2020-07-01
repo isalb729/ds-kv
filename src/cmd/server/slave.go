@@ -10,8 +10,6 @@ import (
 	"github.com/samuel/go-zookeeper/zk"
 	"google.golang.org/grpc"
 	"log"
-	"net"
-	"strings"
 	"sync"
 )
 
@@ -113,12 +111,16 @@ func deregisterSlave(conn *zk.Conn, dataDir, addr string) error {
 		<-done
 	}()
 	go func() {
+		defer func() {
+			done <- true
+		}()
 		list, _, err := conn.Children("/master")
 		if err != nil {
 			log.Println(err)
 		}
 		if len(list) == 0 {
 			log.Println("No master node found")
+			return
 		}
 		conn, err := grpc.Dial(list[0], grpc.WithInsecure())
 		if err != nil {
@@ -131,7 +133,7 @@ func deregisterSlave(conn *zk.Conn, dataDir, addr string) error {
 		if err != nil {
 			log.Println(err)
 		}
-		done <- true
+
 	}()
 
 	addrList, _, err := getAdjacent(conn, addr)
@@ -249,6 +251,13 @@ func InitSlaveSb(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir st
 		GLock:      sync.Mutex{},
 	}
 	pb.RegisterDataStandByServer(grpcServer, &sb)
+	kvOp := rpc.KvOp{
+		DataDir:    dataDir,
+		StoreLevel: StoreLevel,
+		RwLock:     map[string]*sync.RWMutex{},
+		Sb:         nil,
+	}
+	pb.RegisterDataServer(grpcServer, &kvOp)
 	go func() {
 		for {
 			_, _, event, err := conn.ExistsW("/sb/"+addr)
@@ -266,13 +275,13 @@ func InitSlaveSb(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir st
 		relock, err := zookeeper.Lock(conn, "register")
 		_, err = conn.Create("/data/"+addr, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
 		_, _, _ = getSlaveList(conn)
-		var allData map[string]interface{}
+		allData := make(map[string]interface{})
 		files, err := utils.ReadAllFiles(dataDir)
 		if err != nil {
 			panic(err)
 		}
 		for _, file := range files {
-			var data map[string]interface{}
+			data := make(map[string]interface{})
 			err = utils.ReadMap(file, &data)
 			if err != nil {
 				panic(err)
@@ -318,19 +327,6 @@ func InitSlaveSb(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir st
 			return
 		}
 		log.Println("StandByList: ", list)
-		kvOp := rpc.KvOp{
-			DataDir:    dataDir,
-			StoreLevel: StoreLevel,
-			RwLock:     map[string]*sync.RWMutex{},
-			Sb:         list,
-		}
-		grpcServer.Stop()
-		pb.RegisterDataServer(grpcServer, &kvOp)
-		split := strings.Split(addr, ":")
-		lis, err := net.Listen("tcp", ":" + split[1])
-		if err != nil {
-			log.Fatalln(err)
-		}
 		_ = zookeeper.UnLock(conn, relock)
 		go func() {
 			for {
@@ -345,11 +341,6 @@ func InitSlaveSb(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir st
 				}
 			}
 		}()
-		err = grpcServer.Serve(lis)
-		if err != nil {
-			panic(err)
-		}
-
 	}()
 	return nil
 }
