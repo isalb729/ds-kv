@@ -12,6 +12,56 @@ type KvCli struct {
 	Mc pb.MasterClient
 }
 
+func Connect(addrList []string) *KvCli {
+	if len(addrList) == 0 {
+		return nil
+	}
+	index := 0
+	var kvCli KvCli
+	var masterCli pb.MasterClient
+	for ; ; index = (index + 1) % len(addrList) {
+		conn, err := grpc.Dial(addrList[index], grpc.WithInsecure())
+		if err == nil {
+			masterCli = pb.NewMasterClient(conn)
+			ctx, _ := context.WithTimeout(context.Background(), time.Second)
+			_, err := masterCli.GetSlave(ctx, &pb.GetSlaveRequest{
+				Key: "",
+			})
+			if err == nil {
+				kvCli.Mc = masterCli
+				break
+			}
+		}
+	}
+
+	go func() {
+		connect := true
+		for {
+			conn, err := grpc.Dial(addrList[index], grpc.WithInsecure())
+			if err == nil {
+				ctx, _ := context.WithTimeout(context.Background(), time.Second)
+				masterCli = pb.NewMasterClient(conn)
+				_, err = masterCli.GetSlave(ctx, &pb.GetSlaveRequest{
+					Key: "",
+				})
+				if err == nil  {
+					if connect {
+						time.Sleep(300 * time.Millisecond)
+					} else {
+						masterCli = pb.NewMasterClient(conn)
+						kvCli.Mc = masterCli
+						connect = true
+					}
+					continue
+				}
+			}
+			connect = false
+			index = (index + 1) % len(addrList)
+		}
+	}()
+	return &kvCli
+}
+
 /**
  * @return err: error
  * @return created: created or updated
@@ -30,8 +80,8 @@ func (cli *KvCli) put(key, value string) (error, bool) {
 	}
 	kvClient := pb.NewDataClient(conn)
 	putRsp, err := kvClient.Put(ctx, &pb.PutRequest{
-		Key:                  key,
-		Value:                value,
+		Key:   key,
+		Value: value,
 	})
 	if err != nil {
 		return err, false
@@ -57,7 +107,7 @@ func (cli *KvCli) get(key string) (err error, value string) {
 	}
 	kvClient := pb.NewDataClient(conn)
 	getRsp, err := kvClient.Get(ctx, &pb.GetRequest{
-		Key:                  key,
+		Key: key,
 	})
 	if err != nil {
 		return err, ""
@@ -86,7 +136,7 @@ func (cli *KvCli) del(key string) (error, bool) {
 	}
 	kvClient := pb.NewDataClient(conn)
 	delRsp, err := kvClient.Del(ctx, &pb.DelRequest{
-		Key:                  key,
+		Key: key,
 	})
 	if err != nil {
 		return err, false

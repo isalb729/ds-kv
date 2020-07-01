@@ -92,6 +92,7 @@ func Sequential(cli *KvCli) {
 	//<-exit
 	//dumpAll()
 
+	for {
 	put("os", "100")
 	put("ds", "98")
 	put("ca", "97")
@@ -100,7 +101,7 @@ func Sequential(cli *KvCli) {
 	get("ds", 1)
 	get("ca", 1)
 	get("st", 1)
-	dumpAll()
+	dumpAll()}
 	//get("os")
 	//get("ds")
 	//get("ca")
