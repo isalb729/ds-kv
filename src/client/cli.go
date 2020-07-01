@@ -43,64 +43,64 @@ func Sequential(cli *KvCli) {
 			fmt.Println()
 		}
 	}
-	exit := make(chan int, 10)
-	go func() {
-		put("os", "100")
-		exit<-1
-	}()
-	go func() {
-		put("os", "99")
-		exit<-1
-	}()
-	go func() {
-		put("os", "98")
-		exit<-1
-	}()
-	go func() {
-		put("os", "97")
-		exit<-1
-	}()
-	go func() {
-		get("os", 1)
-		get("os", 1)
-		get("os", 1)
-		get("os", 1)
-		get("os", 1)
-		exit<-1
-	}()
-	go func() {
-		get("os", 2)
-		get("os", 2)
-		get("os", 2)
-		get("os", 2)
-		get("os", 2)
-		exit<-1
-	}()
-	go func() {
-		get("os", 3)
-		get("os", 3)
-		get("os", 3)
-		get("os", 3)
-		exit<-1
-	}()
-	<-exit
-	<-exit
-	<-exit
-	<-exit
-	<-exit
-	<-exit
-	<-exit
-	dumpAll()
-
-	//put("os", "100")
-	//put("ds", "98")
-	//put("ca", "97")
-	//put("st", "96")
-	//get("os")
-	//get("ds")
-	//get("ca")
-	//get("st")
+	//exit := make(chan int, 10)
+	//go func() {
+	//	put("os", "100")
+	//	exit<-1
+	//}()
+	//go func() {
+	//	put("os", "99")
+	//	exit<-1
+	//}()
+	//go func() {
+	//	put("os", "98")
+	//	exit<-1
+	//}()
+	//go func() {
+	//	put("os", "97")
+	//	exit<-1
+	//}()
+	//go func() {
+	//	get("os", 1)
+	//	get("os", 1)
+	//	get("os", 1)
+	//	get("os", 1)
+	//	get("os", 1)
+	//	exit<-1
+	//}()
+	//go func() {
+	//	get("os", 2)
+	//	get("os", 2)
+	//	get("os", 2)
+	//	get("os", 2)
+	//	get("os", 2)
+	//	exit<-1
+	//}()
+	//go func() {
+	//	get("os", 3)
+	//	get("os", 3)
+	//	get("os", 3)
+	//	get("os", 3)
+	//	exit<-1
+	//}()
+	//<-exit
+	//<-exit
+	//<-exit
+	//<-exit
+	//<-exit
+	//<-exit
+	//<-exit
 	//dumpAll()
+
+	put("os", "100")
+	put("ds", "98")
+	put("ca", "97")
+	put("st", "96")
+	get("os", 1)
+	get("ds", 1)
+	get("ca", 1)
+	get("st", 1)
+	dumpAll()
 	//get("os")
 	//get("ds")
 	//get("ca")

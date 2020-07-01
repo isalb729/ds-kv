@@ -44,11 +44,11 @@ func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir stri
 	go func() {
 		for {
 			e := <-event
+			list, _, event, err = conn.ChildrenW("/sb")
+			if err != nil {
+				panic(err)
+			}
 			if e.Type == zk.EventNodeChildrenChanged {
-				list, _, event, err = conn.ChildrenW("/sb")
-				if err != nil {
-					panic(err)
-				}
 				kvOp.Sb = list
 				log.Println("StandByList changed: ", list)
 			}
@@ -102,10 +102,33 @@ func registerSlave(conn *zk.Conn, addr, dataDir string) (err error) {
 	return err
 }
 
-
 func deregisterSlave(conn *zk.Conn, dataDir, addr string) error {
 	// redistribute
 	defer utils.DeleteDataDir(dataDir)
+	done := make(chan bool)
+	defer func() {
+		<-done
+	}()
+	go func() {
+		list, _, err := conn.Children("/sb")
+		if err != nil {
+			log.Println(err)
+		}
+		for _, sb := range list {
+			conn, err := grpc.Dial(sb, grpc.WithInsecure())
+			if err != nil {
+				continue
+			}
+			sbClient := pb.NewDataStandByClient(conn)
+			_, err = sbClient.DeregisterNotify(context.Background(), &pb.DeregisterNotifyRequest{
+				Addr: addr,
+			})
+			if err != nil {
+				log.Println(err)
+			}
+		}
+		done <- true
+	}()
 	addrList, _, err := getAdjacent(conn, addr)
 	paths, err := utils.ReadAllFiles(dataDir)
 	if err != nil {
@@ -217,13 +240,41 @@ func InitSlaveSb(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir st
 	sb := rpc.Sb{
 		DataDir:    dataDir,
 		StoreLevel: StoreLevel,
-		Lock: map[string]*sync.Mutex{},
+		Lock:       map[string]*sync.Mutex{},
+		GLock:      sync.Mutex{},
+		Working:    map[string]bool{},
 	}
 	pb.RegisterDataStandByServer(grpcServer, &sb)
 	// listening
+	list, _, event, err := conn.ChildrenW("/data")
+	if err != nil {
+		return err
+	}
+	for _, v := range list {
+		sb.Working[v] = true
+	}
+	go func() {
+		for {
+			e := <-event
+			list, _, event, err = conn.ChildrenW("/data")
+			if err != nil {
+				panic(err)
+			}
+			// only deregister notify is allowed to switch working from true to false
+			if e.Type == zk.EventNodeChildrenChanged {
+				for k, v := range sb.Working {
+					if v && !utils.Include(list, k) {
+						// something terrible happened
+					}
+				}
+				for _, v := range list {
+					sb.Working[v] = true
+				}
+			}
+		}
+	}()
 	return nil
 }
-
 
 func registerSlaveSb(conn *zk.Conn, addr, dataDir string) (err error) {
 	exist, _, err := conn.Exists("/sb")
@@ -239,6 +290,6 @@ func registerSlaveSb(conn *zk.Conn, addr, dataDir string) (err error) {
 		}
 	}
 	_, err = conn.Create("/sb/"+addr, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
+	_ = utils.DeleteDataDir(dataDir)
 	return err
 }
-
