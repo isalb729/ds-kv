@@ -11,6 +11,8 @@ import (
 )
 
 func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
+
+	log.Println("Now I'm the master.")
 	err := registerMaster(conn, addr)
 	if err != nil {
 		return err

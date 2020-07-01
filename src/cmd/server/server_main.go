@@ -66,14 +66,35 @@ func main() {
 		log.Fatalln(err)
 	}
 	if !exist {
-		_, err := zkConn.Create("/slock", nil, 0, zk.WorldACL(zk.PermAll))
+		_, err = zkConn.Create("/slock", nil, 0, zk.WorldACL(zk.PermAll))
 		if err != nil {
 			log.Fatalln(err)
 		}
+	}
+	exist, _, err = zkConn.Exists("/slock/register")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if !exist {
 		_, err = zkConn.Create("/slock/register", nil, 0, zk.WorldACL(zk.PermAll))
 		if err != nil {
 			log.Fatalln(err)
 		}
+	}
+	exist, _, err = zkConn.Exists("/slock/master")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if !exist {
+		_, err = zkConn.Create("/slock/master", nil, 0, zk.WorldACL(zk.PermAll))
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
+	var masterLock string
+	if *tp == "master" {
+		log.Println("Trying to grab the lock")
+		masterLock, err = zookeeper.Lock(zkConn, "master")
 	}
 	relock, err := zookeeper.Lock(zkConn, "register")
 	if err != nil {
@@ -82,6 +103,7 @@ func main() {
 	tr := false
 	switch *tp {
 	case "master":
+
 		err = InitMaster(grpcServer, zkConn, name)
 	case "slave":
 		err = InitSlave(grpcServer, zkConn, name, *dataDir)
@@ -136,6 +158,10 @@ func main() {
 	switch *tp {
 	case "master":
 		err = deregisterMaster(zkConn)
+		if err != nil {
+			log.Println(err)
+		}
+		err = zookeeper.UnLock(zkConn, masterLock)
 	case "slave":
 		err = deregisterSlave(zkConn, *dataDir, name)
 	case "slave-sb":
