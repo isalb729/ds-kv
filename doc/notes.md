@@ -41,15 +41,20 @@ unit test
 7. write shell client
 8. loadtest
 
-
-再做锁　读接写算一个写锁　readall不需要
+##功能
 再做client可链接多个master，client-shell，重试机制(go func 监听ping)
 再做master和data的standby，每次操作把数据放到standby，这个操作的锁和原操作一样
+
+data standby:
+注册
+无注销
+发现节点爆炸后注册自己
+每次put和del操作传到所有standby利用go func
+
+##非功能
 测试并发　写并发脚本
 一致性检查
-
 写注释
 写makefile和script和report
 提交
 思考答辩模式
-You should build standby node for data node (at least two), and backup data in standby node.

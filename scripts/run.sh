@@ -8,4 +8,3 @@ go run client_main.go -op=sequential -addr=:9666
 # zk client
 zk/zk-1/bin/zkCli.sh -server=127.0.0.1:2181
 # zk server
-

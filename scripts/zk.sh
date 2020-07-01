@@ -11,16 +11,16 @@ for zk in $ZKLIST
 do
     $ZK/$zk/bin/zkServer.sh $CMD
 done
-if [[ ($CMD = restart) || ($CMD = start) ]]
-then
-  ZKLIST=($ZKLIST)
-  PS=$(ps -ef | grep zk- | grep -v grep | awk '{print $2}')
-  if [ ${#PS[@]} -ne ${#ZKLIST[@]} ]
-  then
-    echo "FAIL; only ${#PS[@]} zks are started"
-  else
-    echo SUCCESS
-  fi
-fi
+#if [[ ($CMD = restart) || ($CMD = start) ]]
+#then
+#  ZKLIST=($ZKLIST)
+#  PS=$(ps -ef | grep zk- | grep -v grep | awk '{print $2}')
+#  if [ ${#PS[@]} -ne ${#ZKLIST[@]} ]
+#  then
+#    echo "FAIL; only ${#PS[@]} zks are started"
+#  else
+#    echo SUCCESS
+#  fi
+#fi
 
 
