@@ -19,7 +19,7 @@ This repo mainly relies on the following third-party projects:
 + ubuntu 18.04
 
 ### Zookeeper cluster
-A three-node zookeeper cluster is built in the very beginning of this lab. The detailed steps are shown as follows.
+A three-node zookeeper cluster is built in the very beginning of this lab. The detailed establishment steps are shown as follows.
 1. Download zookeeper from https://mirrors.sonic.net/apache/zookeeper/zookeeper-3.6.1/apache-zookeeper-3.6.1-bin.tar.gz
 2. Extract the file and put it under a `zk` directory. Make 3 copy of the directory respectively named `zk-1`, `zk-2` and `zk-3`.
 3. Modify the configuration files, e.g. add the following content to `zk-1/conf/zoo.cfg`. 
@@ -101,7 +101,7 @@ When a node registers, it creates an ephemeral znode in zookeeper with the name 
 In this way, there are no identical server names. Data node registration will also create the data directory and move some data from other servers to itself(discussed in the next part).
 Then a goroutine keeps fetching information of standby data nodes, which is used for backup data. Master registration and deregistration do nothing except create and delete znode.
 Data node deregistration will move its data to other servers and notify the master(in case of server failures).
-Master node watches the data znode in zookeeper and when a data node register, master helps label the server, that is, write an integer value to this server's znode to implement jump consistent hash algorithm(discussed in the next part).
+Master node watches the data znode in zookeeper and when a data node register, master helps label the server, that is, write an integer value to this server's znode to implement consistent hash algorithm(discussed in the next part).
 The label value is between 0 and maximum server number(abbreviated MSN). Imagine a ring with MSN seats on it. Every time a node register, it takes a seat and tries to be as far as possible away from the adjacent nodes, just like social distancing.
 For example, if MSN equals 137 and there are two nodes labelled 0 and 68. Then next server registered can be labeled 102 or 103.
 
@@ -110,7 +110,7 @@ Both registration and deregistration needs a shared "register" lock with the hel
 Data are stored as key value pairs in files. Both key and value have the type of string. Data file operations can be found in `src/server/utils/data.go`.
 Normally a key value pair is only stored in one active data server and some of the standby data servers. 
 
-Data are distributed to different data node by key. A basic hash method is applied to key and it determines which server the key goes to based on jump consistent hash. 
+Data are distributed to different data node by key. A basic hash method is applied to key and it determines which server the key goes to based on consistent hash. 
 To make it more clear I'll give a simple example here. Suppose MSN is 137(default value), and two nodes are labelled 0 and 68. 
 A key has a hash value of 1395665. Then divide the hash value by MSN and the remainder is 46. It's closer to 68 then to 0, so the key is stored in the server labelled 68.
 
@@ -131,8 +131,8 @@ He will register himself as data server, and remove all the data that shouldn't 
 #### Operations
 Four client operations are provided: get, put, delete, dump. Dump is only used for debugging purpose which shows the data storage information of all servers.
 See `src/client/op` for more information. Get operation will ask master for address of data server and then send a get request to it.
-Put and delete operations work in similar way. Dump can be seen as advanced get operation.
-Concurrent data accessing and strong consistency is supported. Data locks are file-level, which means operations on two keys stored in the same file will be sequential.
+Put and delete operations work in similar way. Dump can be seen as advanced get operation. Each put or delete operation will be sent to standby node as well.
+Concurrent data accessing and strong consistency is supported. There is a read write lock for each data file. Data locks are file-level, which means operations on two keys stored in the same file will be sequential.
 This is more scalable than key-level lock and performs better than server-level lock. And more storage levels can help improve the performance.
 
 ### Practice
