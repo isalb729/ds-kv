@@ -58,3 +58,8 @@ master lock; the one to grab it is the master
 写makefile和script和report
 提交
 思考答辩模式
+
+1.写注释
+2.写报告
+3.写client和shell
+4.做测试并提交

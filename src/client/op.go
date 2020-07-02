@@ -66,7 +66,7 @@ func Connect(addrList []string) *KvCli {
  * @return err: error
  * @return created: created or updated
  */
-func (cli *KvCli) put(key, value string) (error, bool) {
+func (cli *KvCli) Put(key, value string) (error, bool) {
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
 	rsp, err := cli.Mc.GetSlave(ctx, &pb.GetSlaveRequest{
 		Key: key,
@@ -93,7 +93,7 @@ func (cli *KvCli) put(key, value string) (error, bool) {
  * @return err: error
  * @return value: corresponding value of the key
  */
-func (cli *KvCli) get(key string) (err error, value string) {
+func (cli *KvCli) Get(key string) (err error, value string) {
 	ctx, _ := context.WithTimeout(context.Background(), 1*time.Second)
 	rsp, err := cli.Mc.GetSlave(ctx, &pb.GetSlaveRequest{
 		Key: key,
@@ -122,7 +122,7 @@ func (cli *KvCli) get(key string) (err error, value string) {
  * @return err: error
  * @return deleted: deleted or not found
  */
-func (cli *KvCli) del(key string) (error, bool) {
+func (cli *KvCli) Del(key string) (error, bool) {
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
 	rsp, err := cli.Mc.GetSlave(ctx, &pb.GetSlaveRequest{
 		Key: key,
@@ -144,7 +144,7 @@ func (cli *KvCli) del(key string) (error, bool) {
 	return nil, delRsp.Deleted
 }
 
-func (cli *KvCli) dumpAll() (error, []*pb.DumpAllResponse_Data) {
+func (cli *KvCli) DumpAll() (error, []*pb.DumpAllResponse_Data) {
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	rsp, err := cli.Mc.DumpAll(ctx, &pb.DumpAllRequest{
 	})

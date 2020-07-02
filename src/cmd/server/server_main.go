@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/isalb729/ds-kv/src/server"
 	"github.com/isalb729/ds-kv/src/utils"
 	"github.com/isalb729/ds-kv/src/zookeeper"
 	"github.com/samuel/go-zookeeper/zk"
@@ -104,15 +105,15 @@ func main() {
 	switch *tp {
 	case "master":
 
-		err = InitMaster(grpcServer, zkConn, name)
+		err = server.InitMaster(grpcServer, zkConn, name)
 	case "slave":
-		err = InitSlave(grpcServer, zkConn, name, *dataDir)
+		err = server.InitSlave(grpcServer, zkConn, name, *dataDir)
 	case "slave-sb":
 		trans := make(chan bool)
 		go func() {
 			tr = <-trans
 		}()
-		err = InitSlaveSb(grpcServer, zkConn, name, *dataDir, trans)
+		err = server.InitSlaveSb(grpcServer, zkConn, name, *dataDir, trans)
 	case "master-sb":
 	default:
 		err = fmt.Errorf("wrong type: only master or slave is supported")
@@ -157,16 +158,16 @@ func main() {
 
 	switch *tp {
 	case "master":
-		err = deregisterMaster(zkConn)
+		err = server.DeregisterMaster(zkConn)
 		if err != nil {
 			log.Println(err)
 		}
 		err = zookeeper.UnLock(zkConn, masterLock)
 	case "slave":
-		err = deregisterSlave(zkConn, *dataDir, name)
+		err = server.DeregisterSlave(zkConn, *dataDir, name)
 	case "slave-sb":
 		if tr {
-			err = deregisterSlave(zkConn, *dataDir, name)
+			err = server.DeregisterSlave(zkConn, *dataDir, name)
 		}
 	case "master-sb":
 	}

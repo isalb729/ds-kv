@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"github.com/isalb729/ds-kv/src/rpc"
@@ -101,7 +101,7 @@ func registerMaster(conn *zk.Conn, addr string) (err error) {
 	return err
 }
 
-func deregisterMaster(conn *zk.Conn) error {
+func DeregisterMaster(conn *zk.Conn) error {
 	return nil
 }
 

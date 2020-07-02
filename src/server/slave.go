@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"context"
@@ -103,7 +103,7 @@ func registerSlave(conn *zk.Conn, addr, dataDir string) (err error) {
 	return err
 }
 
-func deregisterSlave(conn *zk.Conn, dataDir, addr string) error {
+func DeregisterSlave(conn *zk.Conn, dataDir, addr string) error {
 	// redistribute
 	defer utils.DeleteDataDir(dataDir)
 	done := make(chan bool)

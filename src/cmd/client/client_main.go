@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-	// one master address
 	addr := flag.String("addr", "", "master or slave listening address")
 	option := flag.String("op", "func1", "the client program to run")
 	flag.Parse()
@@ -22,9 +21,11 @@ func main() {
 	var try func(*client.KvCli)
 	switch *option {
 	case "concurrent":
-		try = client.Concurrent
+		try = Concurrent
 	case "sequential":
-		try = client.Sequential
+		try = Sequential
+	case "crazyloop":
+		try = CrazyLoop
 	default:
 		log.Fatalln("not implemented option")
 	}
