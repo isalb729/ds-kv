@@ -22,12 +22,11 @@ type Cfg struct {
 }
 
 func main() {
-	// server address and type are passed through command line
-	// default random port
+	// Default random port.
 	addr := flag.String("addr", "127.0.0.1:", "Master or slave listening address")
 	tp := flag.String("type", "slave", "Master or slave")
 	dataDir := flag.String("data", "", "Data directory; not end with /")
-	// zk info is stored in config file
+	// Zk info is stored in config file.
 	var cfg Cfg
 	err := utils.LoadConfig(&cfg)
 	if err != nil {
@@ -36,12 +35,14 @@ func main() {
 	if len(*addr) == 0 {
 		log.Fatalln("Empty address")
 	}
+	// Default host.
 	if (*addr)[0] == ':' {
 		*addr = "127.0.0.1" + *addr
 	}
 	if *dataDir != "" && (*dataDir)[len(*dataDir) - 1] == '/' {
 		*dataDir = (*dataDir)[:len(*dataDir) - 1]
 	}
+	// Connect to zk.
 	zkConn, _, err := zk.Connect(cfg.Zk, 5 * time.Second)
 	if err != nil {
 		log.Fatalln(err)
@@ -54,14 +55,12 @@ func main() {
 		log.Fatalln(err)
 	}
 	splitAddr = strings.Split(lis.Addr().String(), ":")
-	//fmt.Println(splitAddr)
 	port := splitAddr[len(splitAddr) - 1]
-	//fmt.Println(*addr)
-
+	// My ip and port.
 	name := host + ":" + port
 	log.Printf("Server name: %s\n", name)
 	grpcServer := grpc.NewServer()
-	// create master directory if not exist
+	// Create lock znode.
 	exist, _, err := zkConn.Exists("/slock")
 	if err != nil {
 		log.Fatalln(err)
@@ -102,9 +101,9 @@ func main() {
 		log.Fatalln(err)
 	}
 	tr := false
+	// Initialization and registration.
 	switch *tp {
 	case "master":
-
 		err = server.InitMaster(grpcServer, zkConn, name)
 	case "slave":
 		err = server.InitSlave(grpcServer, zkConn, name, *dataDir)
@@ -132,7 +131,7 @@ func main() {
 		}
 	}()
 
-	// listen for signals
+	// Listen for interrupt signals.
 	go func() {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
@@ -145,12 +144,12 @@ func main() {
 	log.Println("Shutting down the service...", <-errChan)
 
 
-	// stop the panicking
+	// Stop the panicking.
 	r := recover()
 	if r != nil {
 		log.Println("Recovering from", r)
 	}
-
+	// Begin deregistration.
 	delock, err := zookeeper.Lock(zkConn, "register")
 	if err != nil {
 		log.Println(err)

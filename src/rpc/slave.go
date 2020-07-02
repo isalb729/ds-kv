@@ -12,8 +12,10 @@ import (
 type KvOp struct {
 	DataDir    string
 	StoreLevel int
-	// read write lock for each file
+	// Read write lock for each file.
 	RwLock  map[string]*sync.RWMutex
+	// Standby node address.
+	// Send backup data.
 	Sb []string
 	GLock sync.Mutex
 }
@@ -21,13 +23,15 @@ type KvOp struct {
 type Sb struct {
 	DataDir string
 	StoreLevel int
-	// lock for each file
+	// Lock for each file.
 	Lock  map[string]*sync.Mutex
-	// avoid concurrent map writing
+	// Avoid concurrent map writing.
 	GLock sync.Mutex
 }
 
-
+/**
+ * Standby node put.
+ */
 func (sb *Sb) Put(ctx context.Context, request *pb.PutRequest) (*pb.NoResponse, error) {
 	key := request.Key
 	val := request.Value
@@ -37,6 +41,7 @@ func (sb *Sb) Put(ctx context.Context, request *pb.PutRequest) (*pb.NoResponse, 
 		return nil, err
 	}
 	data := map[string]interface{}{}
+	// Avoid concurrent map writing.
 	sb.GLock.Lock()
 	if sb.Lock[path] == nil {
 		sb.Lock[path] = new(sync.Mutex)
@@ -44,6 +49,7 @@ func (sb *Sb) Put(ctx context.Context, request *pb.PutRequest) (*pb.NoResponse, 
 	sb.GLock.Unlock()
 	sb.Lock[path].Lock()
 	defer sb.Lock[path].Unlock()
+	// Read data and append.
 	err = utils.ReadMap(path, &data)
 	if err != nil {
 		log.Println(err)
@@ -58,6 +64,9 @@ func (sb *Sb) Put(ctx context.Context, request *pb.PutRequest) (*pb.NoResponse, 
 	}, nil
 }
 
+/**
+ * Delete standby data.
+ */
 func (sb *Sb) Del(ctx context.Context, request *pb.DelRequest) (*pb.NoResponse, error) {
 	key := request.Key
 	err, path := utils.GetPath(sb.DataDir, key, sb.StoreLevel)
@@ -72,6 +81,7 @@ func (sb *Sb) Del(ctx context.Context, request *pb.DelRequest) (*pb.NoResponse, 
 	sb.GLock.Unlock()
 	sb.Lock[path].Lock()
 	defer sb.Lock[path].Unlock()
+	// Read and rewrite.
 	err = utils.ReadMap(path, &data)
 	if err != nil {
 		log.Println(err)
@@ -92,6 +102,9 @@ func (sb *Sb) Del(ctx context.Context, request *pb.DelRequest) (*pb.NoResponse, 
 	}
 }
 
+/**
+ * Get data.
+ */
 func (kv *KvOp) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse, error) {
 	key := request.Key
 	err, path := utils.GetPath(kv.DataDir, key, kv.StoreLevel)
@@ -112,7 +125,6 @@ func (kv *KvOp) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetRespons
 		log.Println(err)
 		return nil, err
 	}
-
 	if data[key] == nil {
 		return &pb.GetResponse{
 			Ok:    false,
@@ -126,6 +138,10 @@ func (kv *KvOp) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetRespons
 	}
 }
 
+/**
+ * Get all data.
+ * For debugging.
+ */
 func (kv *KvOp) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
 	// never deadlock
 	for _, lock := range kv.RwLock {
@@ -136,6 +152,7 @@ func (kv *KvOp) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetA
 			lock.RUnlock()
 		}
 	}()
+	// Read all path.
 	paths, err := utils.ReadAllFiles(kv.DataDir)
 	if err != nil {
 		log.Println(err)
@@ -161,6 +178,9 @@ func (kv *KvOp) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetA
 	}, nil
 }
 
+/**
+ * Put data.
+ */
 func (kv *KvOp) Put(ctx context.Context, request *pb.PutRequest) (*pb.PutResponse, error) {
 	key := request.Key
 	val := request.Value
@@ -183,6 +203,7 @@ func (kv *KvOp) Put(ctx context.Context, request *pb.PutRequest) (*pb.PutRespons
 	defer func() {
 		<-done
 	}()
+	// Send to standby.
 	go func() {
 		for _, sb := range kv.Sb {
 			sbConn, err := grpc.Dial(sb, grpc.WithInsecure())
@@ -201,6 +222,7 @@ func (kv *KvOp) Put(ctx context.Context, request *pb.PutRequest) (*pb.PutRespons
 		}
 		done <- true
 	}()
+	// Read and append.
 	err = utils.ReadMap(path, &data)
 	if err != nil {
 		log.Println(err)
@@ -227,6 +249,9 @@ func (kv *KvOp) Put(ctx context.Context, request *pb.PutRequest) (*pb.PutRespons
 	}, nil
 }
 
+/**
+ * Delete data.
+ */
 func (kv *KvOp) Del(ctx context.Context, request *pb.DelRequest) (*pb.DelResponse, error) {
 	key := request.Key
 	err, path := utils.GetPath(kv.DataDir, key, kv.StoreLevel)
@@ -284,6 +309,10 @@ func (kv *KvOp) Del(ctx context.Context, request *pb.DelRequest) (*pb.DelRespons
 	}
 }
 
+/**
+ * Move data.
+ * For registration or deregistration of data node.
+ */
 func (kv *KvOp) MoveData(ctx context.Context, request *pb.MoveDataRequest) (*pb.MoveDataResponse, error) {
 	for _, lock := range kv.RwLock {
 		lock.Lock()
@@ -299,6 +328,7 @@ func (kv *KvOp) MoveData(ctx context.Context, request *pb.MoveDataRequest) (*pb.
 		return nil, err
 	}
 	var kvs []*pb.MoveDataResponse_Kv
+	// Find the one that's closer to the adjcent.
 	for _, path := range paths {
 		data := map[string]interface{}{}
 		err = utils.ReadMap(path, &data)

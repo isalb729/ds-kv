@@ -9,9 +9,7 @@ import (
 	"log"
 )
 
-/*
- *  Master has to take good care of label.
- */
+// Master has to take good care of label.
 type SlaveMeta struct {
 	Label int
 	Host  string
@@ -19,9 +17,15 @@ type SlaveMeta struct {
 
 type Master struct {
 	SlaveList []SlaveMeta
+	// Available slaves.
+	// Used to detect failures.
 	Working   map[string]bool
 }
 
+/**
+ * Label as deregistered.
+ * If znode disappear and no notification, then it's a failure.
+ */
 func (m *Master) DeregisterNotify(ctx context.Context, request *pb.DeregisterNotifyRequest) (*pb.DeregisterNotifyResponse, error) {
 	log.Println("Data server", request.Addr, "deregistered")
 	m.Working[request.Addr] = false
@@ -30,18 +34,18 @@ func (m *Master) DeregisterNotify(ctx context.Context, request *pb.DeregisterNot
 }
 
 /**
- * client to master
- * send key to get the host of corresponding server
+ * Client to master.
+ * Send key to get the host of corresponding server.
  */
 func (m Master) GetSlave(ctx context.Context, request *pb.GetSlaveRequest) (*pb.GetSlaveResponse, error) {
-	// consistent hash and return key
-	//request.Key
+	// Consistent hash and return key.
 	hash := int(utils.BasicHash(request.Key) % utils.HoleNum)
 	dist := utils.HoleNum
 	var addr string
 	var lastLabel int
+	// Find the closest label.
 	for _, v := range m.SlaveList {
-		// if the same dist, choose the one with the smallest label
+		// If the same dist, choose the one with the smallest label.
 		if utils.Dist(v.Label, hash, utils.HoleNum) < dist || utils.Dist(v.Label, hash, utils.HoleNum) == dist && lastLabel > v.Label {
 			dist = utils.Dist(v.Label, hash, utils.HoleNum)
 			lastLabel = v.Label
@@ -56,6 +60,10 @@ func (m Master) GetSlave(ctx context.Context, request *pb.GetSlaveRequest) (*pb.
 	}, nil
 }
 
+/**
+ * For debugging.
+ * Dump all data.
+ */
 func (m Master) DumpAll(ctx context.Context, request *pb.DumpAllRequest) (*pb.DumpAllResponse, error) {
 	var data []*pb.DumpAllResponse_Data
 	for _, slave := range m.SlaveList {
@@ -63,8 +71,8 @@ func (m Master) DumpAll(ctx context.Context, request *pb.DumpAllRequest) (*pb.Du
 		if err != nil {
 			return nil, err
 		}
-
 		kvClient := pb.NewDataClient(conn)
+		// Get all.
 		rsp, err := kvClient.GetAll(ctx, &pb.GetAllRequest{
 		})
 		if err != nil {

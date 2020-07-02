@@ -17,6 +17,14 @@ const (
 	StoreLevel = 2
 )
 
+/**
+ * Initialze and register.
+ * @param grpcServer: to handle rpc
+ * @param conn: zkclient
+ * @param addr: master address
+ * @param dataDir: data directory
+ * @return err
+ */
 func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir string) error {
 	err := registerSlave(conn, addr, dataDir)
 	if err != nil {
@@ -30,6 +38,7 @@ func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir stri
 		log.Println(err)
 		return err
 	}
+	// Listen standby nodes.
 	list, _, event, err := conn.ChildrenW("/sb")
 	if err != nil {
 		return err
@@ -42,6 +51,7 @@ func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir stri
 		Sb:         list,
 	}
 	pb.RegisterDataServer(grpcServer, &kvOp)
+	// Listen for standby nodes changes and update.
 	go func() {
 		for {
 			e := <-event
@@ -58,8 +68,15 @@ func InitSlave(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir stri
 	return nil
 }
 
+/**
+ * Register data node.
+ * @param conn
+ * @param addr: master address
+ * @param dataDir: data directory
+ * @return err
+ */
 func registerSlave(conn *zk.Conn, addr, dataDir string) (err error) {
-	//test register lock
+	// Test register lock.
 	//time.Sleep(5*time.Second)
 	exist, _, err := conn.Exists("/data")
 	if err != nil {
@@ -74,6 +91,7 @@ func registerSlave(conn *zk.Conn, addr, dataDir string) (err error) {
 		}
 	}
 	_, err = conn.Create("/data/"+addr, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
+	// Move some data from adjacent to this server.
 	addrList, myMeta, err := getAdjacent(conn, addr)
 	log.Println("Adjacent servers: ", addrList)
 	if err != nil {
@@ -103,9 +121,17 @@ func registerSlave(conn *zk.Conn, addr, dataDir string) (err error) {
 	return err
 }
 
+/**
+ * Deregister data node.
+ * @param conn
+ * @param dataDir
+ * @param addr
+ * @return err
+ */
 func DeregisterSlave(conn *zk.Conn, dataDir, addr string) error {
-	// redistribute
+	// Redistribute.
 	defer utils.DeleteDataDir(dataDir)
+	// Wait until notification finishes.
 	done := make(chan bool)
 	defer func() {
 		<-done
@@ -137,6 +163,7 @@ func DeregisterSlave(conn *zk.Conn, dataDir, addr string) error {
 	}()
 
 	addrList, _, err := getAdjacent(conn, addr)
+	// Move data to adjacent servers.
 	paths, err := utils.ReadAllFiles(dataDir)
 	if err != nil {
 		log.Println(err)
@@ -178,13 +205,20 @@ func DeregisterSlave(conn *zk.Conn, dataDir, addr string) error {
 	return err
 }
 
-// adjacent, my meta
+/**
+ * @param conn
+ * @param addr: my address
+ * @return slaveMetaList: all slave metas
+ * @return mymeta: mymeta after labeling
+ * @return err
+ */
 func getAdjacent(conn *zk.Conn, addr string) ([]rpc.SlaveMeta, *rpc.SlaveMeta, error) {
 	slaveList, labelList, err := getSlaveList(conn)
 	if err != nil {
 		return nil, nil, err
 	}
 	i, j := -1, -1
+	// Find me.
 	for k, v := range slaveList {
 		if v.Host == addr {
 			i = k
@@ -204,6 +238,7 @@ func getAdjacent(conn *zk.Conn, addr string) ([]rpc.SlaveMeta, *rpc.SlaveMeta, e
 		return nil, nil, fmt.Errorf("label not found")
 	}
 	serverNum := len(labelList)
+	// Adjacent.
 	left := (j - 1 + serverNum) % serverNum
 	right := (j + 1) % serverNum
 	var adjServer []rpc.SlaveMeta
@@ -230,6 +265,15 @@ func getAdjacent(conn *zk.Conn, addr string) ([]rpc.SlaveMeta, *rpc.SlaveMeta, e
 	return adjServer, &slaveList[i], nil
 }
 
+/**
+ * Initialize standby data node.
+ * @param grpcServer: handle rpc
+ * @param conn
+ * @param addr
+ * @param dataDir
+ * @param trans: a channel to tell whether it has been transformed to data server
+ * @return err
+ */
 func InitSlaveSb(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir string, trans chan bool) error {
 	err := registerSlaveSb(conn, addr, dataDir)
 	if err != nil {
@@ -260,6 +304,7 @@ func InitSlaveSb(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir st
 	pb.RegisterDataServer(grpcServer, &kvOp)
 	go func() {
 		for {
+			// If deleted by master, then transform.
 			_, _, event, err := conn.ExistsW("/sb/"+addr)
 			if err != nil {
 				panic(err)
@@ -271,10 +316,11 @@ func InitSlaveSb(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir st
 			}
 		}
 		trans <- true
-		// transfer
+		// Register as data server.
 		relock, err := zookeeper.Lock(conn, "register")
 		_, err = conn.Create("/data/"+addr, nil, zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
 		_, _, _ = getSlaveList(conn)
+		// Delete irrelevant to data.
 		allData := make(map[string]interface{})
 		files, err := utils.ReadAllFiles(dataDir)
 		if err != nil {
@@ -345,6 +391,13 @@ func InitSlaveSb(grpcServer *grpc.Server, conn *zk.Conn, addr string, dataDir st
 	return nil
 }
 
+/**
+ * Register standby node.
+ * @param conn
+ * @param addr
+ * @param dataDir
+ * @return err
+ */
 func registerSlaveSb(conn *zk.Conn, addr, dataDir string) (err error) {
 	exist, _, err := conn.Exists("/sb")
 	if err != nil {

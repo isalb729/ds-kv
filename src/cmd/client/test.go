@@ -6,7 +6,13 @@ import (
 	"log"
 )
 
+/**
+ * Concurrent data writing.
+ * Test consistency.
+ * @param cli: key value client
+ */
 func Concurrent(cli *client.KvCli) {
+	// Adding some debugging information.
 	put := func(key, val string) {
 		err, _ := cli.Put(key, val)
 		fmt.Printf("put key: %s val: %s err: %v\n", key, val, err)
@@ -16,6 +22,7 @@ func Concurrent(cli *client.KvCli) {
 		err, val := cli.Get(key)
 		fmt.Printf("%d get key: %s, err: %v, val: %s\n", num, key, err, val)
 	}
+
 	dumpAll := func() {
 		fmt.Println("DUMPING ALL!!!")
 		err, rsp := cli.DumpAll()
@@ -31,7 +38,9 @@ func Concurrent(cli *client.KvCli) {
 			fmt.Println()
 		}
 	}
+	// All finish channel.
 	exit := make(chan int, 10)
+	// Concurrent writing.
 	go func() {
 		put("os", "100")
 		exit <- 1
@@ -48,6 +57,8 @@ func Concurrent(cli *client.KvCli) {
 		put("os", "97")
 		exit <- 1
 	}()
+	// Concurrent get.
+	// 1 means the first concurrent coroutine.
 	go func() {
 		get("os", 1)
 		get("os", 1)
@@ -71,6 +82,7 @@ func Concurrent(cli *client.KvCli) {
 		get("os", 3)
 		exit <- 1
 	}()
+	// Waiting to be finished.
 	<-exit
 	<-exit
 	<-exit
@@ -81,6 +93,10 @@ func Concurrent(cli *client.KvCli) {
 	dumpAll()
 }
 
+/**
+ * Sequential test.
+ * @param cli: key value client
+ */
 func Sequential(cli *client.KvCli) {
 	put := func(key, val string) {
 		err, _ := cli.Put(key, val)
@@ -113,23 +129,27 @@ func Sequential(cli *client.KvCli) {
 		}
 	}
 
-	for {
-		get("os")
-		del("ds")
-		put("os", "100")
-		put("ds", "98")
-		put("ca", "97")
-		put("st", "96")
-		del("st")
-		get("os")
-		get("ds")
-		get("ca")
-		get("st")
-		dumpAll()
-	}
+	get("os")
+	del("ds")
+	put("os", "100")
+	put("ds", "98")
+	put("ca", "97")
+	put("st", "96")
+	del("st")
+	get("os")
+	get("ds")
+	get("ca")
+	get("st")
+	dumpAll()
 }
 
-func CrazyLoop(cli *client.KvCli)  {
+/**
+ * Dead loop.
+ * Test failure of master and slave.
+ * Test standby.
+ * @param cli: key value client
+ */
+func CrazyLoop(cli *client.KvCli) {
 	put := func(key, val string) {
 		err, _ := cli.Put(key, val)
 		fmt.Printf("put err: %v\n", err)
@@ -144,7 +164,7 @@ func CrazyLoop(cli *client.KvCli)  {
 		err, _ := cli.Del(key)
 		fmt.Printf("del err: %v\n", err)
 	}
-
+	// Loop forever.
 	for {
 		get("os")
 		del("ds")

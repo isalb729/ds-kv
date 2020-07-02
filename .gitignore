@@ -3,6 +3,8 @@
 *~
 build
 target
+doc
+report.md
 __pycache__
 temp
 zk

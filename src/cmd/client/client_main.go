@@ -11,14 +11,17 @@ func main() {
 	addr := flag.String("addr", "", "master or slave listening address")
 	option := flag.String("op", "func1", "the client program to run")
 	flag.Parse()
+	// Master address list.
 	addrList := strings.Split(*addr, ",")
 	for _, addr := range addrList {
 		if (addr)[0] == ':' {
+			// Default host.
 			addr = "127.0.0.1" + addr
 		}
 	}
 	cli := client.Connect(addrList)
 	var try func(*client.KvCli)
+	// Some test cases.
 	switch *option {
 	case "concurrent":
 		try = Concurrent

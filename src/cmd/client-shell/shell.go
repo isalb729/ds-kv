@@ -37,6 +37,10 @@ func main() {
 func runCommand(commandStr string, cli *client.KvCli) error {
 	commandStr = strings.TrimSuffix(commandStr, "\n")
 	arrCommandStr := strings.Fields(commandStr)
+	if len(arrCommandStr) == 0 {
+		return nil
+	}
+	// Operations.
 	switch arrCommandStr[0] {
 	case "exit":
 		os.Exit(0)

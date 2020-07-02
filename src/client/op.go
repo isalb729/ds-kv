@@ -12,6 +12,11 @@ type KvCli struct {
 	Mc pb.MasterClient
 }
 
+/**
+ * Connect to the master node.
+ * @param addrList: multiple master address
+ * @return kvClient: client
+ */
 func Connect(addrList []string) *KvCli {
 	if len(addrList) == 0 {
 		return nil
@@ -19,6 +24,7 @@ func Connect(addrList []string) *KvCli {
 	index := 0
 	var kvCli KvCli
 	var masterCli pb.MasterClient
+	// Polling to get the available master.
 	for ; ; index = (index + 1) % len(addrList) {
 		conn, err := grpc.Dial(addrList[index], grpc.WithInsecure())
 		if err == nil {
@@ -33,6 +39,7 @@ func Connect(addrList []string) *KvCli {
 			}
 		}
 	}
+	// Listening in case of master failures.
 	go func() {
 		connect := true
 		for {
@@ -44,9 +51,12 @@ func Connect(addrList []string) *KvCli {
 					Key: "",
 				})
 				if err == nil || err.Error() == "rpc error: code = Unknown desc = fail to get data node address" {
+					// Everything is normal.
+					// Avoid frequent pinging.
 					if connect {
 						time.Sleep(300 * time.Millisecond)
 					} else {
+						// Get the new client.
 						masterCli = pb.NewMasterClient(conn)
 						kvCli.Mc = masterCli
 						connect = true
@@ -54,6 +64,7 @@ func Connect(addrList []string) *KvCli {
 					continue
 				}
 			}
+			// Master failure.
 			connect = false
 			index = (index + 1) % len(addrList)
 		}
@@ -62,11 +73,15 @@ func Connect(addrList []string) *KvCli {
 }
 
 /**
+ * Put operation.
+ * @param key
+ * @param value
  * @return err: error
  * @return created: created or updated
  */
 func (cli *KvCli) Put(key, value string) (error, bool) {
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+	// Get slave address.
 	rsp, err := cli.Mc.GetSlave(ctx, &pb.GetSlaveRequest{
 		Key: key,
 	})
@@ -78,6 +93,7 @@ func (cli *KvCli) Put(key, value string) (error, bool) {
 		return err, false
 	}
 	kvClient := pb.NewDataClient(conn)
+	// Put data.
 	putRsp, err := kvClient.Put(ctx, &pb.PutRequest{
 		Key:   key,
 		Value: value,
@@ -89,11 +105,14 @@ func (cli *KvCli) Put(key, value string) (error, bool) {
 }
 
 /**
+ * Get operation.
+ * @param key
  * @return err: error
  * @return value: corresponding value of the key
  */
-func (cli *KvCli) Get(key string) (err error, value string) {
+func (cli *KvCli) Get(key string) (error, string) {
 	ctx, _ := context.WithTimeout(context.Background(), 1*time.Second)
+	// Get slave address.
 	rsp, err := cli.Mc.GetSlave(ctx, &pb.GetSlaveRequest{
 		Key: key,
 	})
@@ -105,6 +124,7 @@ func (cli *KvCli) Get(key string) (err error, value string) {
 		return err, ""
 	}
 	kvClient := pb.NewDataClient(conn)
+	// Get data.
 	getRsp, err := kvClient.Get(ctx, &pb.GetRequest{
 		Key: key,
 	})
@@ -118,11 +138,14 @@ func (cli *KvCli) Get(key string) (err error, value string) {
 }
 
 /**
+ * Delete operation.
+ * @param key
  * @return err: error
  * @return deleted: deleted or not found
  */
 func (cli *KvCli) Del(key string) (error, bool) {
 	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+	// Get slave address.
 	rsp, err := cli.Mc.GetSlave(ctx, &pb.GetSlaveRequest{
 		Key: key,
 	})
@@ -134,6 +157,7 @@ func (cli *KvCli) Del(key string) (error, bool) {
 		return err, false
 	}
 	kvClient := pb.NewDataClient(conn)
+	// Delete data.
 	delRsp, err := kvClient.Del(ctx, &pb.DelRequest{
 		Key: key,
 	})
@@ -143,8 +167,14 @@ func (cli *KvCli) Del(key string) (error, bool) {
 	return nil, delRsp.Deleted
 }
 
+/**
+ * Get all the data storage information.
+ * @return err: error
+ * @return response: response data
+ */
 func (cli *KvCli) DumpAll() (error, []*pb.DumpAllResponse_Data) {
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	// Dump all.
 	rsp, err := cli.Mc.DumpAll(ctx, &pb.DumpAllRequest{
 	})
 	if err != nil {

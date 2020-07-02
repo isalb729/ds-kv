@@ -7,13 +7,12 @@ import (
 )
 
 /*
- * create sequential node;wait until to be the first;doop;delete
+ * https://zookeeper.apache.org/doc/r3.3.5/zookeeperProgrammers.html
+ * https://zookeeper.apache.org/doc/r3.3.5/recipes.html
+ * Sequential lock.
  */
-
-// https://zookeeper.apache.org/doc/r3.3.5/zookeeperProgrammers.html
-// https://zookeeper.apache.org/doc/r3.3.5/recipes.html
-// sequential lock
 func Lock(conn *zk.Conn, name string) (string, error) {
+	// Create sequential znode.
 	path, err := conn.CreateProtectedEphemeralSequential("/slock/" + name + "/0", nil, zk.WorldACL(zk.PermAll))
 	if err != nil {
 		return "", err
@@ -22,12 +21,14 @@ func Lock(conn *zk.Conn, name string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// Get the lock owner.
 	last := getLastName(path[len(utils.ParseDir(path)) + 1:], list)
 	if last != "" {
 		_, _, event, err := conn.ExistsW("/slock/" + name + "/" +  last)
 		if err != nil {
 			return "", err
 		}
+		// Wait until the owner disappear.
 		for e := <-event; ; {
 			list, _, err := conn.Children("/slock/" + name)
 			if err != nil {
