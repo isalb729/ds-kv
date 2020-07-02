@@ -136,3 +136,8 @@ Concurrent data accessing and strong consistency is supported. Data locks are fi
 This is more scalable than key-level lock and performs better than server-level lock. And more storage levels can help improve the performance.
 
 ### Practice
+make zk
+make build
+run server
+run shell
+run client

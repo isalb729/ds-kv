@@ -13,5 +13,6 @@ cd src/cmd/client
 # client
 go run client_main.go test.go -op=sequential -addr=:9666,127.0.0.1:9667
 
-
-
+cd src/cmd/client-shell
+# shell client
+go run shell.go -addr=:9666,127.0.0.1:9667

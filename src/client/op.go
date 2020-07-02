@@ -27,13 +27,12 @@ func Connect(addrList []string) *KvCli {
 			_, err := masterCli.GetSlave(ctx, &pb.GetSlaveRequest{
 				Key: "",
 			})
-			if err == nil {
+			if err == nil || err.Error() == "rpc error: code = Unknown desc = fail to get data node address"{
 				kvCli.Mc = masterCli
 				break
 			}
 		}
 	}
-
 	go func() {
 		connect := true
 		for {
@@ -44,7 +43,7 @@ func Connect(addrList []string) *KvCli {
 				_, err = masterCli.GetSlave(ctx, &pb.GetSlaveRequest{
 					Key: "",
 				})
-				if err == nil  {
+				if err == nil || err.Error() == "rpc error: code = Unknown desc = fail to get data node address" {
 					if connect {
 						time.Sleep(300 * time.Millisecond)
 					} else {
