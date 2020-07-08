@@ -1,5 +1,4 @@
 ## Distributed Key-Value Storage System
-517021910851-于亚杰
 
 In this lab I've built a distributed key-value storage system based on zookeeper and client-server architecture. The system is aimed to achieve high availability and data consistency, without much consideration of performance.
 
