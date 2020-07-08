@@ -26,6 +26,7 @@ func ParseDir(path string) string {
 	}
 	return ""
 }
+
 func WriteMap(path string, data map[string]interface{}) error {
 	dir := ParseDir(path)
 	if dir != "" {

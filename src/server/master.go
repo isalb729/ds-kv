@@ -18,7 +18,6 @@ import (
  * @return err
  */
 func InitMaster(grpcServer *grpc.Server, conn *zk.Conn, addr string) error {
-
 	log.Println("Now I'm the master.")
 	// Register.
 	err := registerMaster(conn, addr)
